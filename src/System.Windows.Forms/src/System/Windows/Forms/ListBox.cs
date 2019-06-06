@@ -4214,6 +4214,8 @@ namespace System.Windows.Forms {
 
                 return base.IsPatternSupported(patternId);
             }
+
+
         }
     }
 }
