@@ -4508,35 +4508,77 @@ namespace System.Windows.Forms.Tests
         }
 
         [WinFormsTheory]
-        [InlineData(FlatStyle.Flat, AccessibleStates.Pressed | AccessibleStates.Focusable)]
-        [InlineData(FlatStyle.Popup, AccessibleStates.Pressed | AccessibleStates.Focusable)]
-        [InlineData(FlatStyle.Standard, AccessibleStates.Pressed | AccessibleStates.Focusable)]
-        [InlineData(FlatStyle.System, AccessibleStates.Focusable)]
-        public void ButtonBase_CreateAccessibilityInstance_InvokeMouseDown_ReturnsExpected(FlatStyle flatStyle, AccessibleStates expectedState)
+        [InlineData(false, FlatStyle.Flat, AccessibleStates.Pressed, AccessibleRole.None)]
+        [InlineData(false, FlatStyle.Popup, AccessibleStates.Pressed, AccessibleRole.None)]
+        [InlineData(false, FlatStyle.Standard, AccessibleStates.Pressed, AccessibleRole.None)]
+        [InlineData(false, FlatStyle.System, AccessibleStates.None, AccessibleRole.None)]
+        [InlineData(true, FlatStyle.Flat, AccessibleStates.Pressed | AccessibleStates.Focusable, AccessibleRole.Client)]
+        [InlineData(true, FlatStyle.Popup, AccessibleStates.Pressed | AccessibleStates.Focusable, AccessibleRole.Client)]
+        [InlineData(true, FlatStyle.Standard, AccessibleStates.Pressed | AccessibleStates.Focusable, AccessibleRole.Client)]
+        [InlineData(true, FlatStyle.System, AccessibleStates.Focusable, AccessibleRole.Client)]
+        public void ButtonBase_CreateAccessibilityInstance_InvokeMouseDown_ReturnsExpected(bool createControl, FlatStyle flatStyle, AccessibleStates expectedState, AccessibleRole expectedRole)
         {
             using var control = new SubButtonBase
             {
                 FlatStyle = flatStyle
             };
+
+            if (createControl)
+            {
+                IntPtr handle = control.Handle;
+                Assert.NotEqual(IntPtr.Zero, handle);
+            }
+
+            Assert.Equal(createControl, control.IsHandleCreated);
+
             control.OnMouseDown(new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0));
             ButtonBase.ButtonBaseAccessibleObject instance = Assert.IsType<ButtonBase.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.Equal(createControl, control.IsHandleCreated); // We check that AccessibleObject doesn't force creating Handle
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
             Assert.Equal(expectedState, instance.State);
-            Assert.Equal(AccessibleRole.Client, instance.Role);
+            Assert.Equal(expectedRole, instance.Role);
             Assert.NotSame(control.CreateAccessibilityInstance(), instance);
             Assert.NotSame(control.AccessibilityObject, instance);
         }
 
         [WinFormsTheory]
         [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
-        public void ButtonBase_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected(FlatStyle flatStyle)
+        public void ButtonBase_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected_IfHandleIsNotCreated(FlatStyle flatStyle)
         {
             using var control = new SubButtonBase
             {
                 FlatStyle = flatStyle,
                 AccessibleRole = AccessibleRole.HelpBalloon
             };
+
+            Assert.False(control.IsHandleCreated);
+
+            ButtonBase.ButtonBaseAccessibleObject instance = Assert.IsType<ButtonBase.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+
+            Assert.False(control.IsHandleCreated); // We check that AccessibleObject doesn't force creating Handle
+            Assert.NotNull(instance);
+            Assert.Same(control, instance.Owner);
+            Assert.Equal(AccessibleStates.None, instance.State);
+            Assert.Equal(AccessibleRole.HelpBalloon, instance.Role); // Custom AccessibleRole
+            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
+            Assert.NotSame(control.AccessibilityObject, instance);
+        }
+
+        [WinFormsTheory]
+        [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
+        public void ButtonBase_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected_IfHandleIsCreated(FlatStyle flatStyle)
+        {
+            using var control = new SubButtonBase
+            {
+                FlatStyle = flatStyle,
+                AccessibleRole = AccessibleRole.HelpBalloon
+            };
+
+            IntPtr handle = control.Handle;
+            Assert.NotEqual(IntPtr.Zero, handle);
+            Assert.True(control.IsHandleCreated);
+
             ButtonBase.ButtonBaseAccessibleObject instance = Assert.IsType<ButtonBase.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);

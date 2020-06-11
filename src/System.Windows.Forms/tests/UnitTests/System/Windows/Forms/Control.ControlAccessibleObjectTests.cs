@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -19,7 +19,7 @@ namespace System.Windows.Forms.Tests
         {
             using var ownerControl = new Control();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
-            Assert.True(ownerControl.IsHandleCreated);
+            Assert.False(ownerControl.IsHandleCreated);
 
             Assert.True(accessibleObject.Bounds.X >= 0);
             Assert.True(accessibleObject.Bounds.Y >= 0);
@@ -873,7 +873,9 @@ namespace System.Windows.Forms.Tests
             using var ownerControl = new AutomationLiveRegionControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             accessibleObject.RaiseLiveRegionChanged();
-        }        [WinFormsFact]
+        }
+
+        [WinFormsFact]
         public void ControlAccessibleObject_RaiseLiveRegionChanged_InvokeNotIAutomationLiveRegion_ThrowsInvalidOperationException()
         {
             using var ownerControl = new Control();
