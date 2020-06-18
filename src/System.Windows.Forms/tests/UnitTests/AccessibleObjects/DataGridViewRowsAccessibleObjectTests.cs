@@ -17,6 +17,7 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
                 Height = 87
             };
 
+            dataGridView.CreateControl();
             dataGridView.Rows[0].Height = 20;
             dataGridView.Rows[1].Height = 20;
             dataGridView.Rows[2].Height = 20;

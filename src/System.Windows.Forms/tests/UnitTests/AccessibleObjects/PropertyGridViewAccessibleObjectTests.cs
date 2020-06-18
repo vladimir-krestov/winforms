@@ -260,6 +260,7 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
         public void PropertyGridViewAccessibleObject_Parent_IsNotNull()
         {
             using PropertyGrid propertyGrid = new PropertyGrid();
+            propertyGrid.CreateControl();
             ControlAccessibleObject accessibleObject = (ControlAccessibleObject)propertyGrid.GridViewAccessibleObject;
             Assert.NotNull(accessibleObject.Parent);
         }

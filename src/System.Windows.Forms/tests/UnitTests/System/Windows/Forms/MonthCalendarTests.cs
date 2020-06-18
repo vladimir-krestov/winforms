@@ -1093,6 +1093,7 @@ namespace System.Windows.Forms.Tests
             {
                 FirstDayOfWeek = Day.Tuesday
             };
+
             Assert.NotEqual(IntPtr.Zero, control.Handle);
             Assert.Equal((IntPtr)0x10001, User32.SendMessageW(control.Handle, (User32.WM)ComCtl32.MCM.GETFIRSTDAYOFWEEK, IntPtr.Zero, IntPtr.Zero));
         }

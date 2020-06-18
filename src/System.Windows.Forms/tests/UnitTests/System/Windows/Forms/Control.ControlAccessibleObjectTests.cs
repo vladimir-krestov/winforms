@@ -25,17 +25,17 @@ namespace System.Windows.Forms.Tests
             Assert.True(accessibleObject.Bounds.Y >= 0);
             Assert.Equal(0, accessibleObject.Bounds.Width);
             Assert.Equal(0, accessibleObject.Bounds.Height);
+            Assert.Equal(IntPtr.Zero, accessibleObject.Handle);
             Assert.Null(accessibleObject.DefaultAction);
             Assert.Null(accessibleObject.Description);
-            Assert.Equal(ownerControl.Handle, accessibleObject.Handle);
             Assert.Null(accessibleObject.Help);
             Assert.Null(accessibleObject.KeyboardShortcut);
             Assert.Null(accessibleObject.Name);
             Assert.Same(ownerControl, accessibleObject.Owner);
-            Assert.NotNull(accessibleObject.Parent);
-            Assert.Equal(AccessibleRole.Client, accessibleObject.Role);
-            Assert.Equal(AccessibleStates.Focusable, accessibleObject.State);
-            Assert.Null(accessibleObject.Value);
+            Assert.Null(accessibleObject.Parent);
+            Assert.Equal(AccessibleRole.None, accessibleObject.Role);
+            Assert.Equal(AccessibleStates.None, accessibleObject.State);
+            Assert.Equal(string.Empty, accessibleObject.Value);
         }
 
         [WinFormsFact]
@@ -117,6 +117,8 @@ namespace System.Windows.Forms.Tests
         public void ControlAccessibleObject_Handle_Set_Success(IntPtr value)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             Assert.True(ownerControl.IsHandleCreated);
 
@@ -695,6 +697,7 @@ namespace System.Windows.Forms.Tests
         public void ControlAccessibleObject_Value_Set_GetReturnsNull(string value)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
 
             accessibleObject.Value = value;
@@ -759,14 +762,30 @@ namespace System.Windows.Forms.Tests
         }
 
         [WinFormsTheory]
-        [InlineData(null, null, 0)]
-        [InlineData("", "", 0)]
-        [InlineData("HelpNamespace", "invalid", 0)]
-        [InlineData("HelpNamespace", "1", 1)]
-        public void ControlAccessibleObject_GetHelpTopic_InvokeWithQueryAccessibilityHelpEvent_ReturnsExpected(string helpNamespace, string helpKeyword, int expectedResult)
+        [InlineData(null, null, 0, true, 0)]
+        [InlineData("", "", 0, true, 0)]
+        [InlineData("HelpNamespace", "invalid", 0, true, 0)]
+        [InlineData("HelpNamespace", "1", 1, true, 0)]
+        [InlineData(null, null, 0, false, -1)]
+        [InlineData("", "", 0, false, -1)]
+        [InlineData("HelpNamespace", "invalid", 0, false, -1)]
+        [InlineData("HelpNamespace", "1", 1, false, -1)]
+        public void ControlAccessibleObject_GetHelpTopic_InvokeWithQueryAccessibilityHelpEvent_ReturnsExpected(
+            string helpNamespace,
+            string helpKeyword,
+            int expectedResult,
+            bool createControl,
+            int exectedResultWithoutHandler)
         {
             using var ownerControl = new Control();
+            if (createControl)
+            {
+                ownerControl.CreateControl();
+            }
+
+            Assert.Equal(createControl, ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.Equal(createControl, ownerControl.IsHandleCreated);
 
             int callCount = 0;
             void handler(object sender, QueryAccessibilityHelpEventArgs e)
@@ -794,7 +813,7 @@ namespace System.Windows.Forms.Tests
 
             // Remove handler.
             ownerControl.QueryAccessibilityHelp -= handler;
-            Assert.Equal(0, accessibleObject.GetHelpTopic(out fileName));
+            Assert.Equal(exectedResultWithoutHandler, accessibleObject.GetHelpTopic(out fileName));
             Assert.Null(fileName);
             Assert.Equal(2, callCount);
         }
@@ -829,11 +848,27 @@ namespace System.Windows.Forms.Tests
 
         [WinFormsTheory]
         [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryDataInvalid), typeof(AccessibleNavigation))]
-        public void AccessibleObject_Navigate_InvalidNavDir_ThrowsArgumentException(AccessibleNavigation navdir)
+        public void AccessibleObject_Navigate_InvalidNavDir_ThrowsArgumentException_IfHandleIsCreated(AccessibleNavigation navdir)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
             Assert.Throws<ArgumentException>(null, () => accessibleObject.Navigate(navdir));
+        }
+
+        [WinFormsTheory]
+        [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryDataInvalid), typeof(AccessibleNavigation))]
+        public void AccessibleObject_Navigate_InvalidNavDir_WithoutException_IfHandleIsNotCreated(AccessibleNavigation navdir)
+        {
+            using var ownerControl = new Control();
+            Assert.False(ownerControl.IsHandleCreated);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
+
+            // Verify that invoking accLocation does not lead to exception throwing if handle is not created
+            accessibleObject.Navigate(navdir);
         }
 
         [WinFormsTheory]
@@ -901,12 +936,15 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleaccDoDefaultAction_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleaccDoDefaultAction_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.accDoDefaultAction(varChild));
         }
@@ -914,12 +952,47 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleaccDoDefaultAction_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleaccDoDefaultAction_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            Assert.False(ownerControl.IsHandleCreated);
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking accDoDefaultAction does not lead to exception throwing if handle is not created
+            iAccessible.accDoDefaultAction(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleaccDoDefaultAction_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsNotCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.accDoDefaultAction(varChild));
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleaccDoDefaultAction_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            Assert.False(ownerControl.IsHandleCreated);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking accDoDefaultAction does not lead to exception throwing if handle is not created
+            iAccessible.accDoDefaultAction(varChild);
         }
 
         [WinFormsFact]
@@ -932,26 +1005,40 @@ namespace System.Windows.Forms.Tests
         }
 
         [WinFormsTheory]
-        [InlineData(-1, -2)]
-        [InlineData(0, 0)]
-        [InlineData(1, 2)]
-        public void AccessibleObject_IAccessibleaccHitTest_InvokeDefault_ReturnsNull(int x, int y)
+        [InlineData(true, -1, -2, 0)]
+        [InlineData(true, 0, 0, 0)]
+        [InlineData(true, 1, 2, 0)]
+        [InlineData(false, -1, -2,  null)]
+        [InlineData(false, 0, 0, null)]
+        [InlineData(false, 1, 2, null)]
+        public void AccessibleObject_IAccessibleaccHitTest_InvokeDefault_ReturnsExpectedValue(bool createControl, int x, int y, int? expectedValue)
         {
             using var ownerControl = new Control();
+            if (createControl)
+            {
+                ownerControl.CreateControl();
+            }
+
+            Assert.Equal(createControl, ownerControl.IsHandleCreated);
+
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.Equal(createControl, ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
-            Assert.Equal(0, iAccessible.accHitTest(x, y));
+            Assert.Equal(expectedValue, iAccessible.accHitTest(x, y));
         }
 
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleaccLocation_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleaccLocation_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.accLocation(out int pxLeft, out int pyTop, out int pcxWidth, out int pcyHeight, varChild));
         }
@@ -959,10 +1046,30 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleaccLocation_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleaccLocation_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            Assert.False(ownerControl.IsHandleCreated);
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking accLocation does not lead to exception throwing if handle is not created
+            iAccessible.accLocation(out int pxLeft, out int pyTop, out int pcxWidth, out int pcyHeight, varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleaccLocation_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.accLocation(out int pxLeft, out int pyTop, out int pcxWidth, out int pcyHeight, varChild));
         }
@@ -970,12 +1077,30 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleaccNavigate_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleaccLocation_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            Assert.False(ownerControl.IsHandleCreated);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking accLocation does not lead to exception throwing if handle is not created
+            iAccessible.accLocation(out int pxLeft, out int pyTop, out int pcxWidth, out int pcyHeight, varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleaccNavigate_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.accNavigate((int)AccessibleNavigation.Down, varChild));
         }
@@ -983,32 +1108,111 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleaccNavigate_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleaccNavigate_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            Assert.False(ownerControl.IsHandleCreated);
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking accNavigate does not lead to exception throwing if handle is not created
+            iAccessible.accNavigate((int)AccessibleNavigation.Down, varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleaccNavigate_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.accNavigate((int)AccessibleNavigation.Down, varChild));
         }
 
-        [WinFormsFact]
-        public void ControlAccessibleObject_IAccessibleaccParent_InvokeDefault_ReturnsExpected()
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleaccNavigate_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
         {
             using var ownerControl = new Control();
+            Assert.False(ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
-            Assert.NotNull(iAccessible.accParent);
+
+            // Verify that invoking accNavigate does not lead to exception throwing if handle is not created
+            iAccessible.accNavigate((int)AccessibleNavigation.Down, varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ControlAccessibleObject_IAccessibleaccParent_InvokeDefault_ReturnsExpectedValue(bool createControl)
+        {
+            using var ownerControl = new Control();
+            if (createControl)
+            {
+                ownerControl.CreateControl();
+            }
+
+            Assert.Equal(createControl, ownerControl.IsHandleCreated);
+
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.Equal(createControl, ownerControl.IsHandleCreated);
+            IAccessible iAccessible = accessibleObject;
+            Assert.Equal(createControl, iAccessible.accParent != null);
         }
 
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleaccSelect_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleaccSelect_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
+            IAccessible iAccessible = accessibleObject;
+            Assert.Throws<ArgumentException>(null, () => iAccessible.accSelect((int)AccessibleSelection.AddSelection, varChild));
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleaccSelect_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
             ownerControl.Controls.Add(child);
+            Assert.False(ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking accSelect does not lead to exception throwing if handle is not created
+            iAccessible.accSelect((int)AccessibleSelection.AddSelection, varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleaccSelect_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            Assert.True(ownerControl.IsHandleCreated);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.True(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.accSelect((int)AccessibleSelection.AddSelection, varChild));
         }
@@ -1016,12 +1220,16 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleaccSelect_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleaccSelect_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
         {
             using var ownerControl = new Control();
+            Assert.False(ownerControl.IsHandleCreated);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.False(ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
-            Assert.Throws<ArgumentException>(null, () => iAccessible.accSelect((int)AccessibleSelection.AddSelection, varChild));
+
+            // Verify that invoking accSelect does not lead to exception throwing if handle is not created
+            iAccessible.accSelect((int)AccessibleSelection.AddSelection, varChild);
         }
 
         [WinFormsFact]
@@ -1036,14 +1244,30 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accChild_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accChild_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+            Assert.Throws<ArgumentException>(null, () => iAccessible.get_accChild(varChild));
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accChild_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
-            Assert.Throws<ArgumentException>(null, () => iAccessible.get_accChild(varChild));
+
+            // Verify that invoking get_accChild does not lead to exception throwing if handle is not created
+            iAccessible.get_accChild(varChild);
         }
 
         [WinFormsTheory]
@@ -1066,24 +1290,34 @@ namespace System.Windows.Forms.Tests
             Assert.Equal(0, iAccessible.accChildCount);
         }
 
-        [WinFormsFact]
-        public void ControlAccessibleObject_IAccessibleget_accChildCount_InvokeWithChildren_ReturnsExpected()
+        [WinFormsTheory]
+        [InlineData(true, 1)]
+        [InlineData(false, 0)]
+        public void ControlAccessibleObject_IAccessibleget_accChildCount_InvokeWithChildren_ReturnsExpected(bool createControl, int expectedCount)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            if (createControl)
+            {
+                ownerControl.CreateControl();
+            }
+
+            Assert.Equal(createControl, ownerControl.IsHandleCreated);
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            Assert.Equal(createControl, ownerControl.IsHandleCreated);
             IAccessible iAccessible = accessibleObject;
-            Assert.Equal(1, iAccessible.accChildCount);
+            Assert.Equal(expectedCount, iAccessible.accChildCount);
         }
 
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accDefaultAction_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accDefaultAction_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1093,9 +1327,25 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accDefaultAction_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accDefaultAction_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accDefaultAction does not lead to exception throwing if handle is not created
+            iAccessible.get_accDefaultAction(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accDefaultAction_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accDefaultAction(varChild));
@@ -1104,10 +1354,24 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accDescription_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accDefaultAction_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accDefaultAction does not lead to exception throwing if handle is not created
+            iAccessible.get_accDefaultAction(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accDescription_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1117,9 +1381,25 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accDescription_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accDescription_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accDescription does not lead to exception throwing if handle is not created
+            iAccessible.get_accDescription(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accDescription_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accDescription(varChild));
@@ -1128,10 +1408,24 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accHelp_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accDescription_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accDescription does not lead to exception throwing if handle is not created
+            iAccessible.get_accDescription(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accHelp_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1141,9 +1435,25 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accHelp_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accHelp_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accHelp does not lead to exception throwing if handle is not created
+            iAccessible.get_accHelp(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accHelp_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accHelp(varChild));
@@ -1152,10 +1462,24 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accHelpTopic_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accHelp_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accHelp does not lead to exception throwing if handle is not created
+            iAccessible.get_accHelp(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accHelpTopic_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1165,9 +1489,25 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accHelpTopic_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accHelpTopic_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accHelp does not lead to exception throwing if handle is not created
+            iAccessible.get_accHelpTopic(out string fileName, varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accHelpTopic_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accHelpTopic(out string fileName, varChild));
@@ -1176,22 +1516,52 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accKeyboardShortcut_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accHelpTopic_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accHelp does not lead to exception throwing if handle is not created
+            iAccessible.get_accHelpTopic(out string fileName, varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accKeyboardShortcut_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            ownerControl.CreateControl();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+            Assert.Throws<ArgumentException>(null, () => iAccessible.get_accKeyboardShortcut(varChild));
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accKeyboardShortcut_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
-            Assert.Throws<ArgumentException>(null, () => iAccessible.get_accKeyboardShortcut(varChild));
+
+            // Verify that invoking get_accKeyboardShortcut does not lead to exception throwing if handle is not created
+            iAccessible.get_accKeyboardShortcut(varChild);
         }
 
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accKeyboardShortcut_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accKeyboardShortcut_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accKeyboardShortcut(varChild));
@@ -1200,10 +1570,24 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accName_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accKeyboardShortcut_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accKeyboardShortcut does not lead to exception throwing if handle is not created
+            iAccessible.get_accKeyboardShortcut(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accName_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1213,9 +1597,25 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accName_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accName_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accName does not lead to exception throwing if handle is not created
+            iAccessible.get_accName(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accName_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accName(varChild));
@@ -1224,14 +1624,43 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accRole_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accName_InvokeNoSuchChild_Created_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accName does not lead to exception throwing if handle is not created
+            iAccessible.get_accName(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accRole_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accRole(varChild));
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accRole_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accRole does not lead to exception throwing if handle is not created
+            iAccessible.get_accRole(varChild);
         }
 
         [WinFormsTheory]
@@ -1248,10 +1677,11 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accState_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accState_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1261,9 +1691,25 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accState_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accState_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accRole does not lead to exception throwing if handle is not created
+            iAccessible.get_accState(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accState_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accState(varChild));
@@ -1272,10 +1718,24 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accValue_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accState_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accRole does not lead to exception throwing if handle is not created
+            iAccessible.get_accState(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accValue_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1285,9 +1745,25 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleget_accValue_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accValue_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accValue does not lead to exception throwing if handle is not created
+            iAccessible.get_accValue(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleget_accValue_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.get_accValue(varChild));
@@ -1296,10 +1772,24 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleset_accName_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleget_accValue_InvokeNoSuchChild_ThrowsArgumentException_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking get_accValue does not lead to exception throwing if handle is not created
+            iAccessible.get_accValue(varChild);
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleset_accName_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1309,9 +1799,25 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleset_accName_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleset_accName_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking set_accName does not lead to exception throwing if handle is not created
+            iAccessible.set_accName(varChild, "Name");
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleset_accName_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
             Assert.Throws<ArgumentException>(null, () => iAccessible.set_accName(varChild, "Name"));
@@ -1320,10 +1826,24 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleset_accValue_InvokeNoSuchChildWithChildren_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleset_accName_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking set_accName does not lead to exception throwing if handle is not created
+            iAccessible.set_accName(varChild, "Name");
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleset_accValue_InvokeNoSuchChildWithChildren_ThrowsArgumentException_IfHandleIsCreated(object varChild)
         {
             using var child = new Control();
             using var ownerControl = new Control();
+            ownerControl.CreateControl();
             ownerControl.Controls.Add(child);
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
@@ -1333,12 +1853,41 @@ namespace System.Windows.Forms.Tests
         [WinFormsTheory]
         [InlineData(-1)]
         [InlineData(1)]
-        public void ControlAccessibleObject_IAccessibleset_accValue_InvokeNoSuchChild_ThrowsArgumentException(object varChild)
+        public void ControlAccessibleObject_IAccessibleset_accValue_InvokeNoSuchChildWithChildren_WithoutException_IfHandleIsNotCreated(object varChild)
+        {
+            using var child = new Control();
+            using var ownerControl = new Control();
+            ownerControl.Controls.Add(child);
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+
+            // Verify that invoking set_accValue does not lead to exception throwing if handle is not created
+            iAccessible.set_accValue(varChild, "Value");
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleset_accValue_InvokeNoSuchChild_ThrowsArgumentException_IfHandleIsCreated(object varChild)
+        {
+            using var ownerControl = new Control();
+            ownerControl.CreateControl();
+            var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
+            IAccessible iAccessible = accessibleObject;
+            Assert.Throws<ArgumentException>(null, () => iAccessible.set_accValue(varChild, "Value"));
+        }
+
+        [WinFormsTheory]
+        [InlineData(-1)]
+        [InlineData(1)]
+        public void ControlAccessibleObject_IAccessibleset_accValue_InvokeNoSuchChild_WithoutException_IfHandleIsNotCreated(object varChild)
         {
             using var ownerControl = new Control();
             var accessibleObject = new Control.ControlAccessibleObject(ownerControl);
             IAccessible iAccessible = accessibleObject;
-            Assert.Throws<ArgumentException>(null, () => iAccessible.set_accValue(varChild, "Value"));
+
+            // Verify that invoking set_accValue does not lead to exception throwing if handle is not created
+            iAccessible.set_accValue(varChild, "Value");
         }
 
         private class AutomationLiveRegionControl : Control, IAutomationLiveRegion

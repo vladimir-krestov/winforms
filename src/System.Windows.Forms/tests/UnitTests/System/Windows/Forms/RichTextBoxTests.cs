@@ -5593,6 +5593,7 @@ namespace System.Windows.Forms.Tests
         public void RichTextBox_SelectionLength_SetDisposed_ThrowsObjectDisposedException(int value)
         {
             using var control = new RichTextBox();
+            control.CreateControl();
             control.Dispose();
             Assert.Throws<ObjectDisposedException>(() => control.SelectionLength = value);
         }
@@ -6046,6 +6047,7 @@ namespace System.Windows.Forms.Tests
                 Text = text,
                 SelectionStart = value
             };
+
             Assert.Equal(0, control.SelectionLength);
             Assert.Equal(expected, control.SelectionStart);
             Assert.Empty(control.SelectedText);
@@ -6994,6 +6996,7 @@ namespace System.Windows.Forms.Tests
                 SelectionLength = selectionLength,
             };
 
+            control.CreateControl();
             control.Text = value;
             Assert.Equal(expected, control.Text);
             Assert.Equal(expected.Length, control.TextLength);
@@ -7764,6 +7767,8 @@ namespace System.Windows.Forms.Tests
             {
                 Text = text
             };
+
+            control.CreateControl();
             Assert.Equal(expected, control.Find(str));
             Assert.True(control.IsHandleCreated);
         }
@@ -7815,6 +7820,8 @@ namespace System.Windows.Forms.Tests
             {
                 Text = text
             };
+
+            control.CreateControl();
             Assert.Equal(expected, control.Find(str, options));
             Assert.True(control.IsHandleCreated);
         }
@@ -7873,6 +7880,8 @@ namespace System.Windows.Forms.Tests
             {
                 Text = text
             };
+
+            control.CreateControl();
             Assert.Equal(expected, control.Find(str, start, options));
             Assert.True(control.IsHandleCreated);
         }
@@ -7937,6 +7946,8 @@ namespace System.Windows.Forms.Tests
             {
                 Text = text
             };
+
+            control.CreateControl();
             Assert.Equal(expected, control.Find(str, start, end, options));
             Assert.True(control.IsHandleCreated);
         }

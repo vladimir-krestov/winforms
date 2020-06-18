@@ -10,13 +10,22 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
 {
     public class ComboBoxAccessibleObjectTests : IClassFixture<ThreadExceptionFixture>
     {
-        [WinFormsFact]
-        public void ComboBoxAccessibleObject_Ctor_Default()
+        [WinFormsTheory]
+        [InlineData(true, AccessibleRole.ComboBox)]
+        [InlineData(false, AccessibleRole.None)]
+        public void ComboBoxAccessibleObject_Ctor_Default(bool createControl, AccessibleRole expectedAccessibleRole)
         {
             using var control = new ComboBox();
+            if (createControl)
+            {
+                control.CreateControl();
+            }
+
+            Assert.Equal(createControl, control.IsHandleCreated);
             var accessibleObject = new ComboBox.ComboBoxAccessibleObject(control);
+            Assert.Equal(createControl, control.IsHandleCreated);
             Assert.NotNull(accessibleObject.Owner);
-            Assert.Equal(AccessibleRole.ComboBox, accessibleObject.Role);
+            Assert.Equal(expectedAccessibleRole, accessibleObject.Role);
         }
 
         [WinFormsTheory]

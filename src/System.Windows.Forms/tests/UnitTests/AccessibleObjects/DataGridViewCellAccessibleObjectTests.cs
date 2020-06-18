@@ -22,6 +22,7 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
                 Width = 85
             };
 
+            dataGridView.CreateControl();
             dataGridView.Columns[0].Width = 40;
             dataGridView.Columns[1].Width = 40;
             dataGridView.Columns[2].Width = 40;

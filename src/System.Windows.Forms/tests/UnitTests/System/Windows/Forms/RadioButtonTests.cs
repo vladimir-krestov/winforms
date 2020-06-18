@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms.Layout;
 using Moq;
 using WinForms.Common.Tests;
@@ -368,13 +369,17 @@ namespace System.Windows.Forms.Tests
 
         [WinFormsTheory]
         [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
-        public void RadioButton_CreateAccessibilityInstance_Invoke_ReturnsExpected(FlatStyle flatStyle)
+        public void RadioButton_CreateAccessibilityInstance_Invoke_ReturnsExpected_IfHandleIsCreated(FlatStyle flatStyle)
         {
             using var control = new SubRadioButton
             {
                 FlatStyle = flatStyle
             };
+
+            control.CreateControl();
+            Assert.True(control.IsHandleCreated);
             RadioButton.RadioButtonAccessibleObject instance = Assert.IsType<RadioButton.RadioButtonAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.True(control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
             Assert.NotEmpty(instance.DefaultAction);
@@ -386,14 +391,39 @@ namespace System.Windows.Forms.Tests
 
         [WinFormsTheory]
         [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
-        public void RadioButton_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected(FlatStyle flatStyle)
+        public void RadioButton_CreateAccessibilityInstance_Invoke_ReturnsExpected_IfHandleIsNotCreated(FlatStyle flatStyle)
+        {
+            using var control = new SubRadioButton
+            {
+                FlatStyle = flatStyle
+            };
+
+            Assert.False(control.IsHandleCreated);
+            RadioButton.RadioButtonAccessibleObject instance = Assert.IsType<RadioButton.RadioButtonAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.False(control.IsHandleCreated);
+            Assert.NotNull(instance);
+            Assert.Same(control, instance.Owner);
+            Assert.NotEmpty(instance.DefaultAction);
+            Assert.Equal(AccessibleStates.None, instance.State);
+            Assert.Equal(AccessibleRole.RadioButton, instance.Role);
+            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
+            Assert.NotSame(control.AccessibilityObject, instance);
+        }
+
+        [WinFormsTheory]
+        [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
+        public void RadioButton_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected_IfHandleIsCreated(FlatStyle flatStyle)
         {
             using var control = new SubRadioButton
             {
                 FlatStyle = flatStyle,
                 AccessibleRole = AccessibleRole.HelpBalloon
             };
+
+            control.CreateControl();
+            Assert.True(control.IsHandleCreated);
             RadioButton.RadioButtonAccessibleObject instance = Assert.IsType<RadioButton.RadioButtonAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.True(control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
             Assert.NotEmpty(instance.DefaultAction);
@@ -404,26 +434,64 @@ namespace System.Windows.Forms.Tests
         }
 
         [WinFormsTheory]
-        [InlineData(FlatStyle.Flat, "")]
-        [InlineData(FlatStyle.Popup, "")]
-        [InlineData(FlatStyle.Standard, "")]
-        [InlineData(FlatStyle.System, "")]
-        [InlineData(FlatStyle.Flat, "Description")]
-        [InlineData(FlatStyle.Popup, "Description")]
-        [InlineData(FlatStyle.Standard, "Description")]
-        [InlineData(FlatStyle.System, "Description")]
-        public void RadioButton_CreateAccessibilityInstance_InvokeWithCustomDefaultActionDescription_ReturnsExpected(FlatStyle flatStyle, string defaultActionDescription)
+        [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
+        public void RadioButton_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected_IfHandleIsNotCreated(FlatStyle flatStyle)
+        {
+            using var control = new SubRadioButton
+            {
+                FlatStyle = flatStyle,
+                AccessibleRole = AccessibleRole.HelpBalloon
+            };
+
+            Assert.False(control.IsHandleCreated);
+            RadioButton.RadioButtonAccessibleObject instance = Assert.IsType<RadioButton.RadioButtonAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.False(control.IsHandleCreated);
+            Assert.NotNull(instance);
+            Assert.Same(control, instance.Owner);
+            Assert.NotEmpty(instance.DefaultAction);
+            Assert.Equal(AccessibleStates.None, instance.State);
+            Assert.Equal(AccessibleRole.HelpBalloon, instance.Role);
+            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
+            Assert.NotSame(control.AccessibilityObject, instance);
+        }
+
+        [WinFormsTheory]
+        [InlineData(FlatStyle.Flat, "", true, AccessibleStates.Focusable)]
+        [InlineData(FlatStyle.Popup, "", true, AccessibleStates.Focusable)]
+        [InlineData(FlatStyle.Standard, "", true, AccessibleStates.Focusable)]
+        [InlineData(FlatStyle.System, "", true, AccessibleStates.Focusable)]
+        [InlineData(FlatStyle.Flat, "Description", true, AccessibleStates.Focusable)]
+        [InlineData(FlatStyle.Popup, "Description", true, AccessibleStates.Focusable)]
+        [InlineData(FlatStyle.Standard, "Description", true, AccessibleStates.Focusable)]
+        [InlineData(FlatStyle.System, "Description", true, AccessibleStates.Focusable)]
+        [InlineData(FlatStyle.Flat, "", false, AccessibleStates.None)]
+        [InlineData(FlatStyle.Popup, "", false, AccessibleStates.None)]
+        [InlineData(FlatStyle.Standard, "", false, AccessibleStates.None)]
+        [InlineData(FlatStyle.System, "", false, AccessibleStates.None)]
+        [InlineData(FlatStyle.Flat, "Description", false, AccessibleStates.None)]
+        [InlineData(FlatStyle.Popup, "Description", false, AccessibleStates.None)]
+        [InlineData(FlatStyle.Standard, "Description", false, AccessibleStates.None)]
+        [InlineData(FlatStyle.System, "Description", false, AccessibleStates.None)]
+        public void RadioButton_CreateAccessibilityInstance_InvokeWithCustomDefaultActionDescription_ReturnsExpected(FlatStyle flatStyle, string defaultActionDescription, bool createControl, AccessibleStates expectedAccessibleStates)
         {
             using var control = new SubRadioButton
             {
                 FlatStyle = flatStyle,
                 AccessibleDefaultActionDescription = defaultActionDescription
             };
+
+            if (createControl)
+            {
+                control.CreateControl();
+            }
+
+            Assert.Equal(createControl, control.IsHandleCreated);
             RadioButton.RadioButtonAccessibleObject instance = Assert.IsType<RadioButton.RadioButtonAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.Equal(createControl, control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
             Assert.Equal(defaultActionDescription, instance.DefaultAction);
-            Assert.Equal(AccessibleStates.Focusable, instance.State);
+            Assert.Equal(expectedAccessibleStates, instance.State);
             Assert.Equal(AccessibleRole.RadioButton, instance.Role);
             Assert.NotSame(control.CreateAccessibilityInstance(), instance);
             Assert.NotSame(control.AccessibilityObject, instance);
@@ -431,18 +499,44 @@ namespace System.Windows.Forms.Tests
 
         [WinFormsTheory]
         [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
-        public void RadioButton_CreateAccessibilityInstance_InvokeChecked_ReturnsExpected(FlatStyle flatStyle)
+        public void RadioButton_CreateAccessibilityInstance_InvokeChecked_ReturnsExpected_IfHandleIsCreated(FlatStyle flatStyle)
         {
             using var control = new SubRadioButton
             {
                 FlatStyle = flatStyle,
                 Checked = true
             };
+
+            control.CreateControl();
+            Assert.True(control.IsHandleCreated);
             RadioButton.RadioButtonAccessibleObject instance = Assert.IsType<RadioButton.RadioButtonAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.True(control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
             Assert.NotEmpty(instance.DefaultAction);
             Assert.Equal(AccessibleStates.Focusable | AccessibleStates.Checked, instance.State);
+            Assert.Equal(AccessibleRole.RadioButton, instance.Role);
+            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
+            Assert.NotSame(control.AccessibilityObject, instance);
+        }
+
+        [WinFormsTheory]
+        [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
+        public void RadioButton_CreateAccessibilityInstance_InvokeChecked_ReturnsExpected_IfHandleIsNotCreated(FlatStyle flatStyle)
+        {
+            using var control = new SubRadioButton
+            {
+                FlatStyle = flatStyle,
+                Checked = true
+            };
+
+            Assert.False(control.IsHandleCreated);
+            RadioButton.RadioButtonAccessibleObject instance = Assert.IsType<RadioButton.RadioButtonAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.False(control.IsHandleCreated);
+            Assert.NotNull(instance);
+            Assert.Same(control, instance.Owner);
+            Assert.NotEmpty(instance.DefaultAction);
+            Assert.Equal(AccessibleStates.Checked, instance.State);
             Assert.Equal(AccessibleRole.RadioButton, instance.Role);
             Assert.NotSame(control.CreateAccessibilityInstance(), instance);
             Assert.NotSame(control.AccessibilityObject, instance);
@@ -1406,6 +1500,8 @@ namespace System.Windows.Forms.Tests
                 set => base.ImeModeBase = value;
             }
 
+            public new bool IsHandleCreated => base.IsHandleCreated;
+
             public new bool IsDefault
             {
                 get => base.IsDefault;
@@ -1423,6 +1519,8 @@ namespace System.Windows.Forms.Tests
             public new bool ShowKeyboardCues => base.ShowKeyboardCues;
 
             public new AccessibleObject CreateAccessibilityInstance() => base.CreateAccessibilityInstance();
+
+            public new void CreateControl() => base.CreateControl();
 
             public new AutoSizeMode GetAutoSizeMode() => base.GetAutoSizeMode();
 

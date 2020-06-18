@@ -4773,9 +4773,10 @@ namespace System.Windows.Forms.Tests
 
         [WinFormsTheory]
         [MemberData(nameof(GetNodeAt_NotEmptyValid_TestData))]
-        public void TreeView_GetNodeAt_InvokePointNotEmptyValid_Success(Point pt)
+        public void TreeView_GetNodeAt_InvokePointNotEmptyValid_Success_IfHandleIsCreated(Point pt)
         {
             using var control = new TreeView();
+            control.CreateControl();
             var node1 = new TreeNode("Some Long Text");
             control.Nodes.Add(node1);
             Assert.Same(node1, control.GetNodeAt(pt));
@@ -4784,6 +4785,21 @@ namespace System.Windows.Forms.Tests
             // Call again.
             Assert.Same(node1, control.GetNodeAt(pt));
             Assert.True(control.IsHandleCreated);
+        }
+
+        [WinFormsTheory]
+        [MemberData(nameof(GetNodeAt_NotEmptyValid_TestData))]
+        public void TreeView_GetNodeAt_InvokePointNotEmptyValid_Success_IfHandleIsNotCreated(Point pt)
+        {
+            using var control = new TreeView();
+            var node1 = new TreeNode("Some Long Text");
+            control.Nodes.Add(node1);
+            Assert.Null(control.GetNodeAt(pt));
+            Assert.False(control.IsHandleCreated);
+
+            // Call again.
+            Assert.Null(control.GetNodeAt(pt));
+            Assert.False(control.IsHandleCreated);
         }
 
         public static IEnumerable<object[]> GetNodeAt_NotEmptyInvalid_TestData()
@@ -4903,18 +4919,19 @@ namespace System.Windows.Forms.Tests
         {
             using var control = new TreeView();
             Assert.Null(control.GetNodeAt(pt.X, pt.Y));
-            Assert.True(control.IsHandleCreated);
+            Assert.False(control.IsHandleCreated);
 
             // Call again.
             Assert.Null(control.GetNodeAt(pt.X, pt.Y));
-            Assert.True(control.IsHandleCreated);
+            Assert.False(control.IsHandleCreated);
         }
 
         [WinFormsTheory]
         [MemberData(nameof(GetNodeAt_NotEmptyValid_TestData))]
-        public void TreeView_GetNodeAt_InvokeIntIntNotEmptyValid_Success(Point pt)
+        public void TreeView_GetNodeAt_InvokeIntIntNotEmptyValid_Success_IfHandleIsCreated(Point pt)
         {
             using var control = new TreeView();
+            control.CreateControl();
             var node1 = new TreeNode("Some Long Text");
             control.Nodes.Add(node1);
             Assert.Same(node1, control.GetNodeAt(pt.X, pt.Y));
@@ -4923,6 +4940,21 @@ namespace System.Windows.Forms.Tests
             // Call again.
             Assert.Same(node1, control.GetNodeAt(pt.X, pt.Y));
             Assert.True(control.IsHandleCreated);
+        }
+
+        [WinFormsTheory]
+        [MemberData(nameof(GetNodeAt_NotEmptyValid_TestData))]
+        public void TreeView_GetNodeAt_InvokeIntIntNotEmptyValid_Success_IfHandleIsNotCreated(Point pt)
+        {
+            using var control = new TreeView();
+            var node1 = new TreeNode("Some Long Text");
+            control.Nodes.Add(node1);
+            Assert.Null(control.GetNodeAt(pt.X, pt.Y));
+            Assert.False(control.IsHandleCreated);
+
+            // Call again.
+            Assert.Null(control.GetNodeAt(pt.X, pt.Y));
+            Assert.False(control.IsHandleCreated);
         }
 
         [WinFormsTheory]
@@ -5082,6 +5114,7 @@ namespace System.Windows.Forms.Tests
         public void TreeView_HitTest_InvokePointEmpty_Success(Point pt, TreeViewHitTestLocations expectedLocations)
         {
             using var control = new TreeView();
+            control.CreateControl();
             TreeViewHitTestInfo result = control.HitTest(pt);
             Assert.Equal(expectedLocations, result.Location);
             Assert.Null(result.Node);
@@ -5250,6 +5283,7 @@ namespace System.Windows.Forms.Tests
         public void TreeView_HitTest_InvokeIntIntEmpty_Success(Point pt, TreeViewHitTestLocations expectedLocations)
         {
             using var control = new TreeView();
+            control.CreateControl();
             TreeViewHitTestInfo result = control.HitTest(pt.X, pt.Y);
             Assert.Equal(expectedLocations, result.Location);
             Assert.Null(result.Node);
@@ -5286,6 +5320,7 @@ namespace System.Windows.Forms.Tests
         public void TreeView_HitTest_InvokeIntIntNotEmptyInvalid_Success(Point pt, TreeViewHitTestLocations expectedLocations)
         {
             using var control = new TreeView();
+            control.CreateControl();
             var node1 = new TreeNode("Some Long Text");
             control.Nodes.Add(node1);
             TreeViewHitTestInfo result = control.HitTest(pt.X, pt.Y);
@@ -6137,6 +6172,7 @@ namespace System.Windows.Forms.Tests
         public void TreeView_OnHandleDestroyed_Invoke_CallsHandleDestroyed(EventArgs eventArgs)
         {
             using var control = new SubTreeView();
+            control.CreateControl();
             int callCount = 0;
             EventHandler handler = (sender, e) =>
             {

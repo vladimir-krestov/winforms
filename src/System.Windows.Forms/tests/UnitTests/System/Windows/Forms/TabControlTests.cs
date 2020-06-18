@@ -1990,6 +1990,7 @@ namespace System.Windows.Forms.Tests
         public void TabControl_RowCount_Get_ReturnsExpectedAndCreatesHandle()
         {
             using var control = new TabControl();
+            control.CreateControl();
             Assert.Equal(0, control.RowCount);
             Assert.True(control.IsHandleCreated);
         }

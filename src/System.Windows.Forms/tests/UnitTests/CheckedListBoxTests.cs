@@ -398,7 +398,7 @@ namespace System.Windows.Forms.Tests
             using Graphics graphics = Graphics.FromImage(image);
             var e = new DrawItemEventArgs(graphics, null, new Rectangle(1, 2, 3, 4), 1, DrawItemState.Default);
             control.OnDrawItem(e);
-            Assert.True(control.IsHandleCreated);
+            Assert.False(control.IsHandleCreated);
         }
 
         [WinFormsFact]
@@ -411,7 +411,7 @@ namespace System.Windows.Forms.Tests
             using Graphics graphics = Graphics.FromImage(image);
             var e = new DrawItemEventArgs(graphics, null, new Rectangle(1, 2, 3, 4), 2, DrawItemState.Default);
             control.OnDrawItem(e);
-            Assert.True(control.IsHandleCreated);
+            Assert.False(control.IsHandleCreated);
         }
 
         private class SubCheckedListBox : CheckedListBox

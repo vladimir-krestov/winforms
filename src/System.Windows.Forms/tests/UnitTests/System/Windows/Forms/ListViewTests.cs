@@ -3630,6 +3630,7 @@ namespace System.Windows.Forms.Tests
         public void ListView_GetItemRect_InvokeWithoutHandle_ReturnsExpectedAndCreatedHandle()
         {
             using var control = new ListView();
+            control.CreateControl();
             var item1 = new ListViewItem();
             var item2 = new ListViewItem();
             control.Items.Add(item1);

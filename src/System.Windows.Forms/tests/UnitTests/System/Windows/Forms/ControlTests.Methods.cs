@@ -393,14 +393,23 @@ namespace System.Windows.Forms.Tests
             Assert.Equal(0, createdCallCount);
         }
 
-        [WinFormsFact]
-        public void Control_CreateAccessibilityInstance_Invoke_ReturnsExpected()
+        [WinFormsTheory]
+        [InlineData(true, AccessibleRole.Client)]
+        [InlineData(false, AccessibleRole.None)]
+        public void Control_CreateAccessibilityInstance_Invoke_ReturnsExpected(bool createHandle, AccessibleRole expectedAccessibleRole)
         {
             using var control = new SubControl();
+            if (createHandle)
+            {
+                control.CreateHandle();
+            }
+
+            Assert.Equal(createHandle, control.IsHandleCreated);
             Control.ControlAccessibleObject instance = Assert.IsAssignableFrom<Control.ControlAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.Equal(createHandle, control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
-            Assert.Equal(AccessibleRole.Client, instance.Role);
+            Assert.Equal(expectedAccessibleRole, instance.Role);
             Assert.NotSame(control.CreateAccessibilityInstance(), instance);
             Assert.NotSame(control.AccessibilityObject, instance);
         }

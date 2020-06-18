@@ -5501,7 +5501,7 @@ namespace System.Windows.Forms
         private protected virtual bool FocusInternal()
         {
             Debug.WriteLineIf(s_focusTracing.TraceVerbose, "Control::FocusInternal - " + Name);
-            if (CanFocus)
+            if (IsHandleCreated && CanFocus)
             {
                 User32.SetFocus(new HandleRef(this, Handle));
             }

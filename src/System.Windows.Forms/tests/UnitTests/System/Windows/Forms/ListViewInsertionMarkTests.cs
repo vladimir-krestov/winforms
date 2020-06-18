@@ -194,7 +194,7 @@ namespace System.Windows.Forms.Tests
             ListViewInsertionMark insertionMark = control.InsertionMark;
             Assert.Equal(Rectangle.Empty, insertionMark.Bounds);
             Assert.Equal(insertionMark.Bounds, insertionMark.Bounds);
-            Assert.True(control.IsHandleCreated);
+            Assert.False(control.IsHandleCreated);
         }
 
         [WinFormsFact]
@@ -291,7 +291,7 @@ namespace System.Windows.Forms.Tests
             ListViewInsertionMark insertionMark = control.InsertionMark;
             Assert.NotEqual(Color.Empty, insertionMark.Color);
             Assert.Equal(insertionMark.Color, insertionMark.Color);
-            Assert.True(control.IsHandleCreated);
+            Assert.False(control.IsHandleCreated);
         }
 
         [WinFormsFact]
@@ -571,7 +571,7 @@ namespace System.Windows.Forms.Tests
             using var control = new ListView();
             ListViewInsertionMark insertionMark = control.InsertionMark;
             Assert.True(insertionMark.NearestIndex(new Point(-10, -11)) >= -1);
-            Assert.True(control.IsHandleCreated);
+            Assert.False(control.IsHandleCreated);
         }
 
         [WinFormsFact]
@@ -605,6 +605,8 @@ namespace System.Windows.Forms.Tests
             {
                 InsertMarkHitTestResult = result
             };
+
+            control.CreateControl();
             ListViewInsertionMark insertionMark = control.InsertionMark;
 
             Assert.Equal(result, insertionMark.NearestIndex(new Point(1, 2)));
@@ -613,6 +615,8 @@ namespace System.Windows.Forms.Tests
         private class CustomInsertMarkHitTestListView : ListView
         {
             public int InsertMarkHitTestResult { get; set; }
+
+            public new void CreateControl() => base.CreateControl();
 
             protected unsafe override void WndProc(ref Message m)
             {

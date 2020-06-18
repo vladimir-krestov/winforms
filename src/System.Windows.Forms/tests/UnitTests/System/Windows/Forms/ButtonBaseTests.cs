@@ -4492,17 +4492,42 @@ namespace System.Windows.Forms.Tests
 
         [WinFormsTheory]
         [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
-        public void ButtonBase_CreateAccessibilityInstance_Invoke_ReturnsExpected(FlatStyle flatStyle)
+        public void ButtonBase_CreateAccessibilityInstance_Invoke_ReturnsExpected_IfHandleIsCreated(FlatStyle flatStyle)
         {
             using var control = new SubButtonBase
             {
                 FlatStyle = flatStyle
             };
+
+            control.CreateControl();
+            Assert.True(control.IsHandleCreated);
+
             ButtonBase.ButtonBaseAccessibleObject instance = Assert.IsType<ButtonBase.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.True(control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
             Assert.Equal(AccessibleStates.Focusable, instance.State);
             Assert.Equal(AccessibleRole.Client, instance.Role);
+            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
+            Assert.NotSame(control.AccessibilityObject, instance);
+        }
+
+        [WinFormsTheory]
+        [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
+        public void ButtonBase_CreateAccessibilityInstance_Invoke_ReturnsExpected_IfHandleIsNotCreated(FlatStyle flatStyle)
+        {
+            using var control = new SubButtonBase
+            {
+                FlatStyle = flatStyle
+            };
+
+            Assert.False(control.IsHandleCreated);
+            ButtonBase.ButtonBaseAccessibleObject instance = Assert.IsType<ButtonBase.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.False(control.IsHandleCreated);
+            Assert.NotNull(instance);
+            Assert.Same(control, instance.Owner);
+            Assert.Equal(AccessibleStates.None, instance.State);
+            Assert.Equal(AccessibleRole.None, instance.Role);
             Assert.NotSame(control.CreateAccessibilityInstance(), instance);
             Assert.NotSame(control.AccessibilityObject, instance);
         }
@@ -4525,8 +4550,7 @@ namespace System.Windows.Forms.Tests
 
             if (createControl)
             {
-                IntPtr handle = control.Handle;
-                Assert.NotEqual(IntPtr.Zero, handle);
+                control.CreateControl();
             }
 
             Assert.Equal(createControl, control.IsHandleCreated);
@@ -4575,11 +4599,11 @@ namespace System.Windows.Forms.Tests
                 AccessibleRole = AccessibleRole.HelpBalloon
             };
 
-            IntPtr handle = control.Handle;
-            Assert.NotEqual(IntPtr.Zero, handle);
+            control.CreateControl();
             Assert.True(control.IsHandleCreated);
 
             ButtonBase.ButtonBaseAccessibleObject instance = Assert.IsType<ButtonBase.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.True(control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
             Assert.Equal(AccessibleStates.Focusable, instance.State);

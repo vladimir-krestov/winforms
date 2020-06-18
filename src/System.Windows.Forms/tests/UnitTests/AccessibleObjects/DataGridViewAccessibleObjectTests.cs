@@ -100,6 +100,7 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
         public void DataGridViewAccessibleObject_Bounds_ReturnsCorrectValue()
         {
             using DataGridView dataGridView = new DataGridView();
+            dataGridView.CreateControl();
             dataGridView.Size = new Size(500, 300);
             AccessibleObject accessibleObject = dataGridView.AccessibilityObject;
 
@@ -182,12 +183,21 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
             Assert.Equal(expectedStatus, actualStatus);
         }
 
-        [WinFormsFact]
-        public void DataGridViewAccessibleObject_State_IsFocusable()
+        [WinFormsTheory]
+        [InlineData(true, AccessibleStates.Focusable)]
+        [InlineData(false, AccessibleStates.None)]
+        public void DataGridViewAccessibleObject_State_IsFocusable(bool createControl, AccessibleStates expectedAccessibleStates)
         {
             using DataGridView dataGridView = new DataGridView();
+            if (createControl)
+            {
+                dataGridView.CreateControl();
+            }
+
+            Assert.Equal(createControl, dataGridView.IsHandleCreated);
             AccessibleObject accessibleObject = dataGridView.AccessibilityObject;
-            Assert.Equal(AccessibleStates.Focusable, accessibleObject.State & AccessibleStates.Focusable);
+            Assert.Equal(createControl, dataGridView.IsHandleCreated);
+            Assert.Equal(expectedAccessibleStates, accessibleObject.State & AccessibleStates.Focusable);
         }
 
         [WinFormsFact]
@@ -230,7 +240,10 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
         public void DataGridViewAccessibleObject_Cell_IsOffscreen_ReturnsCorrectValue()
         {
             using DataGridView dataGridView = new DataGridView();
+            dataGridView.CreateControl();
+            Assert.True(dataGridView.IsHandleCreated);
             AccessibleObject accessibleObject = dataGridView.AccessibilityObject;
+            Assert.True(dataGridView.IsHandleCreated);
             dataGridView.Size = new Size(200, 100);
             dataGridView.Columns.Add(new DataGridViewTextBoxColumn());
 
@@ -336,6 +349,7 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
         public void DataGridViewAccessibleObject_Parent_IsNotNull()
         {
             using DataGridView dataGridView = new DataGridView();
+            dataGridView.CreateControl();
             AccessibleObject accessibleObject = dataGridView.AccessibilityObject;
             Assert.NotNull(accessibleObject.Parent);
         }

@@ -990,55 +990,117 @@ namespace System.Windows.Forms.Tests
 
         [WinFormsTheory]
         [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
-        public void Button_CreateAccessibilityInstance_Invoke_ReturnsExpected(FlatStyle flatStyle)
+        public void Button_CreateAccessibilityInstance_Invoke_ReturnsExpected_IfHandleIsNotCreated(FlatStyle flatStyle)
         {
             using var control = new SubButton
             {
                 FlatStyle = flatStyle
             };
-            Button.ButtonBaseAccessibleObject instance = Assert.IsAssignableFrom<Button.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
-            Assert.NotNull(instance);
-            Assert.Same(control, instance.Owner);
-            Assert.Equal(AccessibleStates.Focusable, instance.State);
-            Assert.Equal(AccessibleRole.PushButton, instance.Role);
-            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
-            Assert.NotSame(control.AccessibilityObject, instance);
-        }
 
-        [WinFormsTheory]
-        [InlineData(FlatStyle.Flat, AccessibleStates.Pressed | AccessibleStates.Focusable)]
-        [InlineData(FlatStyle.Popup, AccessibleStates.Pressed | AccessibleStates.Focusable)]
-        [InlineData(FlatStyle.Standard, AccessibleStates.Pressed | AccessibleStates.Focusable)]
-        [InlineData(FlatStyle.System, AccessibleStates.Focusable)]
-        public void Button_CreateAccessibilityInstance_InvokeMouseDown_ReturnsExpected(FlatStyle flatStyle, AccessibleStates expectedState)
-        {
-            using var control = new SubButton
-            {
-                FlatStyle = flatStyle
-            };
-            control.OnMouseDown(new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0));
+            Assert.False(control.IsHandleCreated);
             Button.ButtonBaseAccessibleObject instance = Assert.IsAssignableFrom<Button.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.False(control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
-            Assert.Equal(expectedState, instance.State);
-            Assert.Equal(AccessibleRole.PushButton, instance.Role);
+            Assert.Equal(AccessibleStates.None, instance.State);
+            Assert.Equal(AccessibleRole.None, instance.Role);
             Assert.NotSame(control.CreateAccessibilityInstance(), instance);
             Assert.NotSame(control.AccessibilityObject, instance);
         }
 
         [WinFormsTheory]
         [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
-        public void Button_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected(FlatStyle flatStyle)
+        public void Button_CreateAccessibilityInstance_Invoke_ReturnsExpected_IfHandleIsCreated(FlatStyle flatStyle)
+        {
+            using var control = new SubButton
+            {
+                FlatStyle = flatStyle
+            };
+
+            control.CreateControl();
+            Assert.True(control.IsHandleCreated);
+            Button.ButtonBaseAccessibleObject instance = Assert.IsAssignableFrom<Button.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.True(control.IsHandleCreated);
+            Assert.NotNull(instance);
+            Assert.Same(control, instance.Owner);
+            Assert.Equal(AccessibleStates.Focusable, instance.State);
+            Assert.Equal(AccessibleRole.PushButton, instance.Role);
+            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
+            Assert.NotSame(control.AccessibilityObject, instance);
+        }
+
+        [WinFormsTheory]
+        [InlineData(true, FlatStyle.Flat, AccessibleStates.Pressed | AccessibleStates.Focusable, AccessibleRole.PushButton)]
+        [InlineData(true, FlatStyle.Popup, AccessibleStates.Pressed | AccessibleStates.Focusable, AccessibleRole.PushButton)]
+        [InlineData(true, FlatStyle.Standard, AccessibleStates.Pressed | AccessibleStates.Focusable, AccessibleRole.PushButton)]
+        [InlineData(true, FlatStyle.System, AccessibleStates.Focusable, AccessibleRole.PushButton)]
+        [InlineData(false, FlatStyle.Flat, AccessibleStates.Pressed, AccessibleRole.None)]
+        [InlineData(false, FlatStyle.Popup, AccessibleStates.Pressed, AccessibleRole.None)]
+        [InlineData(false, FlatStyle.Standard, AccessibleStates.Pressed, AccessibleRole.None)]
+        [InlineData(false, FlatStyle.System, AccessibleStates.None, AccessibleRole.None)]
+        public void Button_CreateAccessibilityInstance_InvokeMouseDown_ReturnsExpected(bool createControl, FlatStyle flatStyle, AccessibleStates expectedState, AccessibleRole expectedRole)
+        {
+            using var control = new SubButton
+            {
+                FlatStyle = flatStyle
+            };
+
+            if (createControl)
+            {
+                control.CreateControl();
+            }
+
+            Assert.Equal(createControl, control.IsHandleCreated);
+
+            control.OnMouseDown(new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0));
+            Button.ButtonBaseAccessibleObject instance = Assert.IsAssignableFrom<Button.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.Equal(createControl, control.IsHandleCreated);
+            Assert.NotNull(instance);
+            Assert.Same(control, instance.Owner);
+            Assert.Equal(expectedState, instance.State);
+            Assert.Equal(expectedRole, instance.Role);
+            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
+            Assert.NotSame(control.AccessibilityObject, instance);
+        }
+
+        [WinFormsTheory]
+        [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
+        public void Button_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected_IfHandleIsCreated(FlatStyle flatStyle)
         {
             using var control = new SubButton
             {
                 FlatStyle = flatStyle,
                 AccessibleRole = AccessibleRole.HelpBalloon
             };
+
+            control.CreateControl();
+            Assert.True(control.IsHandleCreated);
             Button.ButtonBaseAccessibleObject instance = Assert.IsAssignableFrom<Button.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.True(control.IsHandleCreated);
             Assert.NotNull(instance);
             Assert.Same(control, instance.Owner);
             Assert.Equal(AccessibleStates.Focusable, instance.State);
+            Assert.Equal(AccessibleRole.HelpBalloon, instance.Role);
+            Assert.NotSame(control.CreateAccessibilityInstance(), instance);
+            Assert.NotSame(control.AccessibilityObject, instance);
+        }
+
+        [WinFormsTheory]
+        [CommonMemberData(nameof(CommonTestHelper.GetEnumTypeTheoryData), typeof(FlatStyle))]
+        public void Button_CreateAccessibilityInstance_InvokeWithCustomRole_ReturnsExpected_IfHandleIsNotCreated(FlatStyle flatStyle)
+        {
+            using var control = new SubButton
+            {
+                FlatStyle = flatStyle,
+                AccessibleRole = AccessibleRole.HelpBalloon
+            };
+
+            Assert.False(control.IsHandleCreated);
+            Button.ButtonBaseAccessibleObject instance = Assert.IsAssignableFrom<Button.ButtonBaseAccessibleObject>(control.CreateAccessibilityInstance());
+            Assert.False(control.IsHandleCreated);
+            Assert.NotNull(instance);
+            Assert.Same(control, instance.Owner);
+            Assert.Equal(AccessibleStates.None, instance.State);
             Assert.Equal(AccessibleRole.HelpBalloon, instance.Role);
             Assert.NotSame(control.CreateAccessibilityInstance(), instance);
             Assert.NotSame(control.AccessibilityObject, instance);

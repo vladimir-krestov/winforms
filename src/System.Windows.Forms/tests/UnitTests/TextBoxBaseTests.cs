@@ -4663,7 +4663,7 @@ namespace System.Windows.Forms.Tests
         {
             using var control = new SubTextBox();
             Assert.Equal(0, control.GetFirstCharIndexFromLine(lineNumber));
-            Assert.True(control.IsHandleCreated);
+            Assert.False(control.IsHandleCreated);
         }
 
         [WinFormsTheory]

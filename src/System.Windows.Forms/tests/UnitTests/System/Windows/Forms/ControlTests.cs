@@ -786,6 +786,8 @@ namespace System.Windows.Forms.Tests
                 set => base.ImeModeBase = value;
             }
 
+            public new bool IsHandleCreated => base.IsHandleCreated;
+
             public new bool ResizeRedraw
             {
                 get => base.ResizeRedraw;

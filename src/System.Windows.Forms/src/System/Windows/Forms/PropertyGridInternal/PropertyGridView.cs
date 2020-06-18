@@ -7136,7 +7136,7 @@ namespace System.Windows.Forms.PropertyGridInternal
 
             internal override void SetFocus()
             {
-                if (!Owner.IsHandleCreated)
+                if (!_owningGridViewListBox.IsHandleCreated)
                 {
                     return;
                 }
