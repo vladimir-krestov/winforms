@@ -63,7 +63,7 @@ namespace System.Windows.Forms
         IArrangedElement,
         IBindableComponent,
         IKeyboardToolTip,
-        IHandle
+        IHandleEx
     {
 #if DEBUG
         internal static readonly TraceSwitch s_paletteTracing = new TraceSwitch("PaletteTracing", "Debug Palette code");
@@ -4442,7 +4442,7 @@ namespace System.Windows.Forms
         /// </summary>
         [SRCategory(nameof(SR.CatLayout))]
         [SRDescription(nameof(SR.ControlOnResizeDescr))]
-         [EditorBrowsable(EditorBrowsableState.Advanced)]
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
         public event EventHandler Resize
         {
             add => Events.AddHandler(s_resizeEvent, value);

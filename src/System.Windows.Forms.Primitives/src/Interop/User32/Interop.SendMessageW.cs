@@ -38,6 +38,20 @@ internal static partial class Interop
             return result;
         }
 
+        public static IntPtr SendMessageW(
+            IHandleEx hWnd,
+            WM Msg,
+            IntPtr wParam = default,
+            IntPtr lParam = default)
+        {
+            if (!hWnd.IsHandleCreated)
+            {
+                return IntPtr.Zero;
+            }
+
+            return SendMessageW((IHandle)hWnd, Msg, wParam, lParam);
+        }
+
         public unsafe static IntPtr SendMessageW(
             IntPtr hWnd,
             WM Msg,
@@ -74,6 +88,20 @@ internal static partial class Interop
             }
         }
 
+        public unsafe static IntPtr SendMessageW(
+            IHandleEx hWnd,
+            WM Msg,
+            IntPtr wParam,
+            string lParam)
+        {
+            if (!hWnd.IsHandleCreated)
+            {
+                return IntPtr.Zero;
+            }
+
+            return SendMessageW((IHandle)hWnd, Msg, wParam, lParam);
+        }
+
         public unsafe static IntPtr SendMessageW<T>(
             IntPtr hWnd,
             WM Msg,
@@ -96,6 +124,20 @@ internal static partial class Interop
             {
                 return SendMessageW(hWnd, Msg, wParam, (IntPtr)l);
             }
+        }
+
+        public unsafe static IntPtr SendMessageW<T>(
+            IHandleEx hWnd,
+            WM Msg,
+            IntPtr wParam,
+            ref T lParam) where T : unmanaged
+        {
+            if (!hWnd.IsHandleCreated)
+            {
+                return IntPtr.Zero;
+            }
+
+            return SendMessageW((IHandle)hWnd, Msg, wParam, ref lParam);
         }
     }
 }

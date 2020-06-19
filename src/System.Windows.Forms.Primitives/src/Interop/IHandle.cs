@@ -23,3 +23,8 @@ internal interface IHandle
 {
     public IntPtr Handle { get; }
 }
+
+internal interface IHandleEx : IHandle
+{
+    public bool IsHandleCreated { get; }
+}
