@@ -59,7 +59,7 @@ namespace System.Windows.Forms
 
                     var runtimeId = new int[3];
                     runtimeId[0] = RuntimeIDFirstItem;
-                    runtimeId[1] = (int)(long)_owningListBox.Handle;
+                    runtimeId[1] = (int)(long)_owningListBox.InternalHandle;
                     runtimeId[2] = _owningListBox.GetHashCode();
 
                     return runtimeId;
@@ -152,7 +152,7 @@ namespace System.Windows.Forms
                         }
                         return result;
                     case UiaCore.UIA.NativeWindowHandlePropertyId:
-                        return _owningListBox.Handle;
+                        return _owningListBox.InternalHandle;
                     case UiaCore.UIA.IsSelectionPatternAvailablePropertyId:
                         return IsPatternSupported(UiaCore.UIA.SelectionPatternId);
                     case UiaCore.UIA.IsScrollPatternAvailablePropertyId:

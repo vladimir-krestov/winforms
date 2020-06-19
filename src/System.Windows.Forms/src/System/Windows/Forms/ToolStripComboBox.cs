@@ -682,7 +682,7 @@ namespace System.Windows.Forms
 
                 public ToolStripComboBoxControlAccessibleObject(ToolStripComboBoxControl toolStripComboBoxControl) : base(toolStripComboBoxControl)
                 {
-                    childAccessibleObject = new ChildAccessibleObject(toolStripComboBoxControl, toolStripComboBoxControl.Handle);
+                    childAccessibleObject = new ChildAccessibleObject(toolStripComboBoxControl, toolStripComboBoxControl.InternalHandle);
                 }
 
                 internal override UiaCore.IRawElementProviderFragment FragmentNavigate(UiaCore.NavigateDirection direction)

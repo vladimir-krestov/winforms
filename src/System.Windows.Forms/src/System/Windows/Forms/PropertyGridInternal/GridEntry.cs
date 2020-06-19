@@ -3138,7 +3138,7 @@ namespace System.Windows.Forms.PropertyGridInternal
 
                         runtimeId = new int[3];
                         runtimeId[0] = 0x2a;
-                        runtimeId[1] = (int)(long)owner.GridEntryHost.Handle;
+                        runtimeId[1] = (int)(long)owner.GridEntryHost.InternalHandle;
                         runtimeId[2] = GetHashCode();
                     }
 

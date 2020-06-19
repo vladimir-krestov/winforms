@@ -206,7 +206,7 @@ namespace System.Windows.Forms
                     case UiaCore.UIA.IsPasswordPropertyId:
                         return false;
                     case UiaCore.UIA.NativeWindowHandlePropertyId:
-                        return _owningListBox.Handle;
+                        return _owningListBox.InternalHandle;
                     case UiaCore.UIA.IsOffscreenPropertyId:
                         return (State & AccessibleStates.Offscreen) == AccessibleStates.Offscreen;
                     case UiaCore.UIA.IsSelectionItemPatternAvailablePropertyId:
@@ -287,7 +287,7 @@ namespace System.Windows.Forms
             {
                 _owningListBox.SelectedIndex = CurrentIndex;
 
-                User32.InvalidateRect(new HandleRef(this, _owningListBox.Handle), null, BOOL.FALSE);
+                User32.InvalidateRect(new HandleRef(this, _owningListBox.InternalHandle), null, BOOL.FALSE);
                 RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);
                 RaiseAutomationEvent(UiaCore.UIA.SelectionItem_ElementSelectedEventId);
             }

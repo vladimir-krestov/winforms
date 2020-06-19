@@ -254,7 +254,7 @@ namespace System.Windows.Forms.PropertyGridInternal
             _owningDropDownButton = owningDropDownButton;
             _owningPropertyGrid = owningDropDownButton.Parent as PropertyGridView;
 
-            UseStdAccessibleObjects(owningDropDownButton.Handle);
+            UseStdAccessibleObjects(owningDropDownButton.InternalHandle);
         }
 
         public override void DoDefaultAction()

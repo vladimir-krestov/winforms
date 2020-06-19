@@ -465,7 +465,7 @@ namespace System.Windows.Forms
             {
                 var rect = new RECT();
                 SendMessageW(this, (WM)LB.GETITEMRECT, (IntPtr)index, ref rect);
-                InvalidateRect(new HandleRef(this, Handle), &rect, BOOL.FALSE);
+                InvalidateRect(new HandleRef(this, InternalHandle), &rect, BOOL.FALSE);
             }
         }
 

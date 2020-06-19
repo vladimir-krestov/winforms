@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -228,7 +228,7 @@ namespace System.Windows.Forms
                 MouseEventArgs me = _parent.TranslateMouseEvent(this, e);
                 if (e.Button == MouseButtons.Left)
                 {
-                    if (!_parent.ValidationCancelled && User32.WindowFromPoint(pt) == Handle)
+                    if (!_parent.ValidationCancelled && User32.WindowFromPoint(pt) == InternalHandle)
                     {
                         if (!_doubleClickFired)
                         {
@@ -552,7 +552,7 @@ namespace System.Windows.Forms
 
                         var runtimeId = new int[3];
                         runtimeId[0] = RuntimeIDFirstItem;
-                        runtimeId[1] = (int)(long)_owner.Handle;
+                        runtimeId[1] = (int)(long)_owner.InternalHandle;
                         runtimeId[2] = _owner.GetHashCode();
 
                         return runtimeId;

@@ -6923,7 +6923,7 @@ namespace System.Windows.Forms.PropertyGridInternal
                 _owningGridViewListBox = owningGridViewListBox;
                 _owningItem = owningItem;
 
-                UseStdAccessibleObjects(_owningGridViewListBox.Handle);
+                UseStdAccessibleObjects(_owningGridViewListBox.InternalHandle);
             }
 
             /// <summary>
@@ -7115,7 +7115,7 @@ namespace System.Windows.Forms.PropertyGridInternal
                 {
                     var runtimeId = new int[3];
                     runtimeId[0] = RuntimeIDFirstItem;
-                    runtimeId[1] = (int)(long)_owningGridViewListBox.Handle;
+                    runtimeId[1] = (int)(long)_owningGridViewListBox.InternalHandle;
                     runtimeId[2] = _owningItem.GetHashCode();
 
                     return runtimeId;
@@ -8633,7 +8633,7 @@ namespace System.Windows.Forms.PropertyGridInternal
             {
                 // Convert to client coordinates
                 var pt = new Point(x, y);
-                User32.ScreenToClient(new HandleRef(Owner, Owner.Handle), ref pt);
+                User32.ScreenToClient(new HandleRef(Owner, Owner.InternalHandle), ref pt);
 
                 // Find the grid entry at the given client coordinates
                 //

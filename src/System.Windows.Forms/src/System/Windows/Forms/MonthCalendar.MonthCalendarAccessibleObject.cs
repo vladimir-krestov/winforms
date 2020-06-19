@@ -535,7 +535,7 @@ namespace System.Windows.Forms
 
                 if (success)
                 {
-                    success = User32.MapWindowPoints(new HandleRef(this, Owner.Handle), new HandleRef(null, IntPtr.Zero), ref calendarPartRectangle, 2) != 0;
+                    success = User32.MapWindowPoints(new HandleRef(this, Owner.InternalHandle), new HandleRef(null, IntPtr.Zero), ref calendarPartRectangle, 2) != 0;
                 }
 
                 if (!success)

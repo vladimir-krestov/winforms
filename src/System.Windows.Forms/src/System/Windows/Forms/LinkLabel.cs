@@ -2720,7 +2720,7 @@ namespace System.Windows.Forms
                 get
                 {
                     Region region = link.VisualRegion;
-                    Graphics g = Graphics.FromHwnd(link.Owner.Handle);
+                    Graphics g = Graphics.FromHwnd(link.Owner.InternalHandle);
 
                     // Make sure we have a region for this link
                     //

@@ -4560,7 +4560,7 @@ namespace System.Windows.Forms
 
             public ChildAccessibleObject(ComboBox owner, IntPtr handle)
             {
-                Debug.Assert(owner != null && owner.Handle != IntPtr.Zero, "ComboBox's handle hasn't been created");
+                Debug.Assert(owner != null && owner.InternalHandle != IntPtr.Zero, "ComboBox's handle hasn't been created");
 
                 this.owner = owner;
                 UseStdAccessibleObjects(handle);
@@ -4791,7 +4791,7 @@ namespace System.Windows.Forms
                 {
                     var runtimeId = new int[4];
                     runtimeId[0] = RuntimeIDFirstItem;
-                    runtimeId[1] = (int)(long)_owningComboBox.Handle;
+                    runtimeId[1] = (int)(long)_owningComboBox.InternalHandle;
                     runtimeId[2] = _owningComboBox.GetListNativeWindowRuntimeIdPart();
 
                     var comboBoxAccessibleObject = _owningComboBox.AccessibilityObject as ComboBoxAccessibleObject;
@@ -4964,7 +4964,7 @@ namespace System.Windows.Forms
 
                         var runtimeId = new int[3];
                         runtimeId[0] = RuntimeIDFirstItem;
-                        runtimeId[1] = (int)(long)_owningComboBox.Handle;
+                        runtimeId[1] = (int)(long)_owningComboBox.InternalHandle;
                         runtimeId[2] = _owningComboBox.GetHashCode();
                         return runtimeId;
                     }
@@ -5038,7 +5038,7 @@ namespace System.Windows.Forms
                 {
                     if (_dropDownButtonUiaProvider == null)
                     {
-                        _dropDownButtonUiaProvider = new ComboBoxChildDropDownButtonUiaProvider(_owningComboBox, _owningComboBox.Handle);
+                        _dropDownButtonUiaProvider = new ComboBoxChildDropDownButtonUiaProvider(_owningComboBox, (_owningComboBox.InternalHandle));
                     }
 
                     return _dropDownButtonUiaProvider;
@@ -5160,7 +5160,7 @@ namespace System.Windows.Forms
                     case UiaCore.UIA.HasKeyboardFocusPropertyId:
                         return _owningComboBox.Focused;
                     case UiaCore.UIA.NativeWindowHandlePropertyId:
-                        return _owningComboBox.Handle;
+                        return _owningComboBox.InternalHandle;
                     case UiaCore.UIA.IsExpandCollapsePatternAvailablePropertyId:
                         return IsPatternSupported(UiaCore.UIA.ExpandCollapsePatternId);
                     case UiaCore.UIA.IsValuePatternAvailablePropertyId:
@@ -5574,7 +5574,7 @@ namespace System.Windows.Forms
                 {
                     var runtimeId = new int[3];
                     runtimeId[0] = RuntimeIDFirstItem;
-                    runtimeId[1] = (int)(long)_owningComboBox.Handle;
+                    runtimeId[1] = (int)(long)_owningComboBox.InternalHandle;
                     runtimeId[2] = _owningComboBox.GetListNativeWindowRuntimeIdPart();
 
                     return runtimeId;
@@ -5747,7 +5747,7 @@ namespace System.Windows.Forms
                 {
                     var runtimeId = new int[5];
                     runtimeId[0] = RuntimeIDFirstItem;
-                    runtimeId[1] = (int)(long)_owner.Handle;
+                    runtimeId[1] = (int)(long)_owner.InternalHandle;
                     runtimeId[2] = _owner.GetHashCode();
                     runtimeId[3] = GetHashCode();
                     runtimeId[4] = GetChildId();
@@ -5980,7 +5980,7 @@ namespace System.Windows.Forms
                 {
                     var runtimeId = new int[5];
                     runtimeId[0] = RuntimeIDFirstItem;
-                    runtimeId[1] = (int)(long)_owner.Handle;
+                    runtimeId[1] = (int)(long)_owner.InternalHandle;
                     runtimeId[2] = _owner.GetHashCode();
 
                     // Made up constant from MSAA proxy. When MSAA proxy is used as an accessibility provider,
