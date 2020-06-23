@@ -145,6 +145,8 @@ namespace System.Windows.Forms
             }
         }
 
+        bool IHandle.IsHandleCreated => throw new NotImplementedException();
+
         /// <summary>
         ///  Whether or not the underlying Win32 handle has been created.
         /// </summary>

@@ -234,6 +234,8 @@ namespace System.Windows.Forms.VisualStyles
             }
         }
 
+        bool IHandle.IsHandleCreated => throw new NotImplementedException();
+
         /// <summary>
         ///  Used to set a new VisualStyleElement on this VisualStyleRenderer instance.
         /// </summary>
@@ -290,13 +292,13 @@ namespace System.Windows.Forms.VisualStyles
                 {
                     using (ThemeHandle hTheme = ThemeHandle.Create(_class, true, hWnd)!)
                     {
-                        RECT rect  = bounds;
+                        RECT rect = bounds;
                         lastHResult = DrawThemeBackground(hTheme, hdc, part, state, ref rect, null);
                     }
                 }
                 else
                 {
-                    RECT rect  = bounds;
+                    RECT rect = bounds;
                     lastHResult = DrawThemeBackground(this, hdc, part, state, ref rect, null);
                 }
             }
@@ -1061,6 +1063,8 @@ namespace System.Windows.Forms.VisualStyles
             }
 
             public IntPtr Handle { get; private set; }
+
+            bool IHandle.IsHandleCreated => throw new NotImplementedException();
 
             public static ThemeHandle? Create(string className, bool throwExceptionOnFail)
             {

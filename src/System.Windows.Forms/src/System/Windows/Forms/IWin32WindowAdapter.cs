@@ -16,5 +16,7 @@ namespace System.Windows.Forms
         }
 
         public IntPtr Handle => Control.GetSafeHandle(_window);
+
+        bool IHandle.IsHandleCreated => throw new NotImplementedException();
     }
 }

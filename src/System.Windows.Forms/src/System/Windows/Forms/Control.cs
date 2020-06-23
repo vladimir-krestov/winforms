@@ -63,7 +63,7 @@ namespace System.Windows.Forms
         IArrangedElement,
         IBindableComponent,
         IKeyboardToolTip,
-        IHandleEx
+        IHandle
     {
 #if DEBUG
         internal static readonly TraceSwitch s_paletteTracing = new TraceSwitch("PaletteTracing", "Debug Palette code");

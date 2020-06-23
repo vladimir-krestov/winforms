@@ -1707,6 +1707,8 @@ namespace System.Windows.Forms
             /// </summary>
             public IntPtr Handle => icon.Handle;
 
+            bool IHandle.IsHandleCreated => throw new NotImplementedException();
+
             /// <summary>
             ///  Returns the handle of the region.
             /// </summary>

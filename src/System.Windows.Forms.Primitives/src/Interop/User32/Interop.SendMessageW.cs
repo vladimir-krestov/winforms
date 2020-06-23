@@ -33,23 +33,14 @@ internal static partial class Interop
             IntPtr wParam = default,
             IntPtr lParam = default)
         {
-            IntPtr result = SendMessageW(hWnd.Handle, Msg, wParam, lParam);
-            GC.KeepAlive(hWnd);
-            return result;
-        }
-
-        public static IntPtr SendMessageW(
-            IHandleEx hWnd,
-            WM Msg,
-            IntPtr wParam = default,
-            IntPtr lParam = default)
-        {
             if (!hWnd.IsHandleCreated)
             {
                 return IntPtr.Zero;
             }
 
-            return SendMessageW((IHandle)hWnd, Msg, wParam, lParam);
+            IntPtr result = SendMessageW(hWnd.Handle, Msg, wParam, lParam);
+            GC.KeepAlive(hWnd);
+            return result;
         }
 
         public unsafe static IntPtr SendMessageW(
@@ -82,24 +73,15 @@ internal static partial class Interop
             IntPtr wParam,
             string lParam)
         {
-            fixed (char* c = lParam)
-            {
-                return SendMessageW(hWnd, Msg, wParam, (IntPtr)(void*)c);
-            }
-        }
-
-        public unsafe static IntPtr SendMessageW(
-            IHandleEx hWnd,
-            WM Msg,
-            IntPtr wParam,
-            string lParam)
-        {
             if (!hWnd.IsHandleCreated)
             {
                 return IntPtr.Zero;
             }
 
-            return SendMessageW((IHandle)hWnd, Msg, wParam, lParam);
+            fixed (char* c = lParam)
+            {
+                return SendMessageW(hWnd, Msg, wParam, (IntPtr)(void*)c);
+            }
         }
 
         public unsafe static IntPtr SendMessageW<T>(
@@ -120,24 +102,15 @@ internal static partial class Interop
             IntPtr wParam,
             ref T lParam) where T : unmanaged
         {
-            fixed (void* l = &lParam)
-            {
-                return SendMessageW(hWnd, Msg, wParam, (IntPtr)l);
-            }
-        }
-
-        public unsafe static IntPtr SendMessageW<T>(
-            IHandleEx hWnd,
-            WM Msg,
-            IntPtr wParam,
-            ref T lParam) where T : unmanaged
-        {
             if (!hWnd.IsHandleCreated)
             {
                 return IntPtr.Zero;
             }
 
-            return SendMessageW((IHandle)hWnd, Msg, wParam, ref lParam);
+            fixed (void* l = &lParam)
+            {
+                return SendMessageW(hWnd, Msg, wParam, (IntPtr)l);
+            }
         }
     }
 }

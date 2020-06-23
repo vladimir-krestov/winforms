@@ -86,6 +86,8 @@ namespace System.Windows.Forms.Internal
 
         IntPtr IHandle.Handle => Hdc;
 
+        bool IHandle.IsHandleCreated => throw new NotImplementedException();
+
         /// <summary>
         ///  This object's hdc.  If this property is called, then the object will be used as an HDC wrapper,
         ///  so the hdc is cached and calls to GetHdc/ReleaseHdc won't PInvoke into GDI.

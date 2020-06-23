@@ -271,6 +271,8 @@ namespace System.Windows.Forms
             }
         }
 
+        bool IHandle.IsHandleCreated => throw new NotImplementedException();
+
         /// <summary>
         ///  Shows if the keyboard tooltip is currently active.
         /// </summary>

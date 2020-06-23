@@ -156,6 +156,8 @@ namespace System.Windows.Forms
         /// </summary>
         public IntPtr Handle { get; private set; }
 
+        bool IHandle.IsHandleCreated => throw new NotImplementedException();
+
         /// <summary>
         ///  This returns the prior NativeWindow created with the same native handle, if any.
         /// </summary>

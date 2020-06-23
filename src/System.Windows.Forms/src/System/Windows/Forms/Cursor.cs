@@ -153,6 +153,8 @@ namespace System.Windows.Forms
             }
         }
 
+        bool IHandle.IsHandleCreated => throw new NotImplementedException();
+
         /// <summary>
         ///  Returns the "hot" location of the cursor.
         /// </summary>
