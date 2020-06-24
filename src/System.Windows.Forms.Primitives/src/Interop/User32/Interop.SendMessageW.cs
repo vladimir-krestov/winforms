@@ -10,13 +10,13 @@ internal static partial class Interop
     internal static partial class User32
     {
         [DllImport(Libraries.User32, ExactSpelling = true)]
-        public static extern IntPtr SendMessageW(
+        public static extern IntPtr SendMessageW( //1
             IntPtr hWnd,
             WM Msg,
             IntPtr wParam = default,
             IntPtr lParam = default);
 
-        public static IntPtr SendMessageW(
+        public static IntPtr SendMessageW( //2
             HandleRef hWnd,
             WM Msg,
             IntPtr wParam = default,
@@ -27,7 +27,7 @@ internal static partial class Interop
             return result;
         }
 
-        public static IntPtr SendMessageW(
+        public static IntPtr SendMessageW( //3
             IHandle hWnd,
             WM Msg,
             IntPtr wParam = default,
@@ -38,7 +38,7 @@ internal static partial class Interop
             return result;
         }
 
-        public unsafe static IntPtr SendMessageW(
+        public unsafe static IntPtr SendMessageW( //4
             IntPtr hWnd,
             WM Msg,
             IntPtr wParam,
@@ -50,7 +50,7 @@ internal static partial class Interop
             }
         }
 
-        public unsafe static IntPtr SendMessageW(
+        public unsafe static IntPtr SendMessageW( //5
             HandleRef hWnd,
             WM Msg,
             IntPtr wParam,
@@ -62,7 +62,7 @@ internal static partial class Interop
             }
         }
 
-        public unsafe static IntPtr SendMessageW(
+        public unsafe static IntPtr SendMessageW( //6
             IHandle hWnd,
             WM Msg,
             IntPtr wParam,
@@ -74,7 +74,7 @@ internal static partial class Interop
             }
         }
 
-        public unsafe static IntPtr SendMessageW<T>(
+        public unsafe static IntPtr SendMessageW<T>( //7
             IntPtr hWnd,
             WM Msg,
             IntPtr wParam,
@@ -86,7 +86,7 @@ internal static partial class Interop
             }
         }
 
-        public unsafe static IntPtr SendMessageW<T>(
+        public unsafe static IntPtr SendMessageW<T>( //8
             IHandle hWnd,
             WM Msg,
             IntPtr wParam,

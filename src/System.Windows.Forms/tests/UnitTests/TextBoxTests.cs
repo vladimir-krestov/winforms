@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using WinForms.Common.Tests;
 using Xunit;
 using static Interop;
@@ -409,7 +410,9 @@ namespace System.Windows.Forms.Tests
                 PlaceholderText = "Enter your name"
             };
 
-            System.Runtime.InteropServices.HandleRef refHandle = new System.Runtime.InteropServices.HandleRef(tb, tb.Handle);
+            tb.CreateControl();
+            Assert.True(tb.IsHandleCreated);
+            HandleRef refHandle = new HandleRef(tb, tb.Handle);
 
             //Cover the Placeholder draw code path
             User32.SendMessageW(refHandle, User32.WM.PAINT, PARAM.FromBool(false));
@@ -430,7 +433,9 @@ namespace System.Windows.Forms.Tests
                 RightToLeft = RightToLeft.Yes
             };
 
-            System.Runtime.InteropServices.HandleRef refHandle = new System.Runtime.InteropServices.HandleRef(tb, tb.Handle);
+            tb.CreateControl();
+            Assert.True(tb.IsHandleCreated);
+            HandleRef refHandle = new HandleRef(tb, tb.Handle);
 
             //Cover the Placeholder draw code path in RightToLeft scenario
             User32.SendMessageW(refHandle, User32.WM.PAINT, PARAM.FromBool(false));
