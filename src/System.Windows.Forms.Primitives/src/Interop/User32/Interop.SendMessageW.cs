@@ -33,11 +33,6 @@ internal static partial class Interop
             IntPtr wParam = default,
             IntPtr lParam = default)
         {
-            if (!hWnd.IsHandleCreated)
-            {
-                return IntPtr.Zero;
-            }
-
             IntPtr result = SendMessageW(hWnd.Handle, Msg, wParam, lParam);
             GC.KeepAlive(hWnd);
             return result;
@@ -73,11 +68,6 @@ internal static partial class Interop
             IntPtr wParam,
             string lParam)
         {
-            if (!hWnd.IsHandleCreated)
-            {
-                return IntPtr.Zero;
-            }
-
             fixed (char* c = lParam)
             {
                 return SendMessageW(hWnd, Msg, wParam, (IntPtr)(void*)c);
@@ -102,11 +92,6 @@ internal static partial class Interop
             IntPtr wParam,
             ref T lParam) where T : unmanaged
         {
-            if (!hWnd.IsHandleCreated)
-            {
-                return IntPtr.Zero;
-            }
-
             fixed (void* l = &lParam)
             {
                 return SendMessageW(hWnd, Msg, wParam, (IntPtr)l);

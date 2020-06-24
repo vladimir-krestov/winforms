@@ -27,7 +27,7 @@ namespace System.Windows.Forms
             public ControlAccessibleObject(Control ownerControl)
             {
                 Owner = ownerControl ?? throw new ArgumentNullException(nameof(ownerControl));
-                Handle = ownerControl.IsHandleCreated ? ownerControl.Handle : IntPtr.Zero;
+                Handle = ownerControl.InternalHandle;
             }
 
             internal ControlAccessibleObject(Control ownerControl, int accObjId)
@@ -36,7 +36,7 @@ namespace System.Windows.Forms
 
                 AccessibleObjectId = accObjId; // ...must set this *before* setting the Handle property
                 Owner = ownerControl ?? throw new ArgumentNullException(nameof(ownerControl));
-                Handle = ownerControl.IsHandleCreated ? ownerControl.Handle : IntPtr.Zero;
+                Handle = ownerControl.InternalHandle;
             }
 
             /// <summary>
