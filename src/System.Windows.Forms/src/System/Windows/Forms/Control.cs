@@ -9846,6 +9846,11 @@ namespace System.Windows.Forms
         /// </summary>
         public Rectangle RectangleToClient(Rectangle r)
         {
+            if (!IsHandleCreated)
+            {
+                return Rectangle.Empty;
+            }
+
             RECT rect = r;
             User32.MapWindowPoints(IntPtr.Zero, new HandleRef(this, Handle), ref rect, 2);
             return Rectangle.FromLTRB(rect.left, rect.top, rect.right, rect.bottom);
@@ -9856,6 +9861,11 @@ namespace System.Windows.Forms
         /// </summary>
         public Rectangle RectangleToScreen(Rectangle r)
         {
+            if (!IsHandleCreated)
+            {
+                return Rectangle.Empty;
+            }
+
             RECT rect = r;
             User32.MapWindowPoints(new HandleRef(this, Handle), IntPtr.Zero, ref rect, 2);
             return Rectangle.FromLTRB(rect.left, rect.top, rect.right, rect.bottom);
