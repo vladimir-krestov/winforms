@@ -1499,7 +1499,8 @@ namespace System.Windows.Forms
         {
             CheckIndex(index);
             var rect = new RECT();
-            if (SendMessageW(this, (WM)LB.GETITEMRECT, (IntPtr)index, ref rect) == IntPtr.Zero)
+
+            if (!IsHandleCreated || SendMessageW(this, (WM)LB.GETITEMRECT, (IntPtr)index, ref rect) == IntPtr.Zero)
             {
                 return Rectangle.Empty;
             }

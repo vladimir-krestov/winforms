@@ -3460,7 +3460,7 @@ namespace System.Windows.Forms
         /// </summary>
         public Rectangle GetItemRect(int index)
         {
-            return GetItemRect(index, 0);
+            return IsHandleCreated ? GetItemRect(index, 0) : Rectangle.Empty;
         }
 
         /// <summary>
@@ -3501,7 +3501,7 @@ namespace System.Windows.Forms
         /// </summary>
         private Rectangle GetItemRectOrEmpty(int index)
         {
-            if (index < 0 || index >= Items.Count)
+            if (!IsHandleCreated || index < 0 || index >= Items.Count)
             {
                 return Rectangle.Empty;
             }
@@ -3528,7 +3528,7 @@ namespace System.Windows.Forms
         /// </summary>
         internal Rectangle GetSubItemRect(int itemIndex, int subItemIndex)
         {
-            return GetSubItemRect(itemIndex, subItemIndex, 0);
+            return IsHandleCreated ? GetSubItemRect(itemIndex, subItemIndex, 0) : Rectangle.Empty;
         }
 
         internal Rectangle GetSubItemRect(int itemIndex, int subItemIndex, ItemBoundsPortion portion)
@@ -3581,7 +3581,7 @@ namespace System.Windows.Forms
 
         public ListViewHitTestInfo HitTest(int x, int y)
         {
-            if (!ClientRectangle.Contains(x, y))
+            if (!IsHandleCreated || !ClientRectangle.Contains(x, y))
             {
                 return new ListViewHitTestInfo(null /*hitItem*/, null /*hitSubItem*/, ListViewHitTestLocations.None /*hitLocation*/);
             }
@@ -5526,7 +5526,7 @@ namespace System.Windows.Forms
             // If we're checked, hittest to see if we're
             // on the check mark
 
-            if (!CheckBoxes)
+            if (!CheckBoxes || !IsHandleCreated)
             {
                 return;
             }
@@ -5570,7 +5570,7 @@ namespace System.Windows.Forms
             // If we're checked, hittest to see if we're
             // on the item
 
-            if (!CheckBoxes)
+            if (!CheckBoxes || !IsHandleCreated)
             {
                 return;
             }
@@ -5990,11 +5990,16 @@ namespace System.Windows.Forms
 
         private int GetIndexOfClickedItem()
         {
+            if (!IsHandleCreated)
+            {
+                return -1;
+            }
+
             var lvhi = SetupHitTestInfo();
             return unchecked((int)(long)User32.SendMessageW(this, (User32.WM)LVM.HITTEST, IntPtr.Zero, ref lvhi));
         }
 
-        private LVHITTESTINFO SetupHitTestInfo ()
+        private LVHITTESTINFO SetupHitTestInfo()
         {
             Point pos = Cursor.Position;
             pos = PointToClient(pos);
@@ -6008,6 +6013,11 @@ namespace System.Windows.Forms
 
         private int UpdateGroupCollapse(Interop.User32.WM clickType)
         {
+            if (!IsHandleCreated)
+            {
+                return -1;
+            }
+
             // see if the mouse event occurred on a group
             var lvhi = SetupHitTestInfo();
             int groupID = unchecked((int)(long)User32.SendMessageW(this, (User32.WM)LVM.HITTEST, (IntPtr)(-1), ref lvhi));

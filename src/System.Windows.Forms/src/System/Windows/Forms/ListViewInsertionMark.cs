@@ -60,6 +60,13 @@ namespace System.Windows.Forms
         {
             get
             {
+                Debug.Assert(listView.IsHandleCreated, "ApplySavedState Precondition: List-view handle must be created");
+
+                if (!listView.IsHandleCreated)
+                {
+                    return Rectangle.Empty;
+                }
+
                 var rect = new RECT();
                 User32.SendMessageW(listView, (User32.WM)LVM.GETINSERTMARKRECT, IntPtr.Zero, ref rect);
                 return Rectangle.FromLTRB(rect.left, rect.top, rect.right, rect.bottom);
@@ -120,6 +127,13 @@ namespace System.Windows.Forms
         /// </summary>
         public unsafe int NearestIndex(Point pt)
         {
+            Debug.Assert(listView.IsHandleCreated, "ApplySavedState Precondition: List-view handle must be created");
+
+            if (!listView.IsHandleCreated)
+            {
+                return -1;
+            }
+
             var lvInsertMark = new LVINSERTMARK
             {
                 cbSize = (uint)sizeof(LVINSERTMARK)

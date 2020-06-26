@@ -1020,6 +1020,11 @@ namespace System.Windows.Forms
         {
             Debug.Assert(listView.IsHandleCreated, "Should only invoke UpdateStateToListView when handle is created.");
 
+            if (!listView.IsHandleCreated)
+            {
+                return;
+            }
+
             if (index == -1)
             {
                 index = Index;
