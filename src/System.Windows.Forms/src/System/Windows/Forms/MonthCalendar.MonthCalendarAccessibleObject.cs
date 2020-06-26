@@ -255,6 +255,11 @@ namespace System.Windows.Forms
                 int innerX = (int)x;
                 int innerY = (int)y;
 
+                if (!_owner.IsHandleCreated)
+                {
+                    return base.ElementProviderFromPoint(x, y);
+                }
+
                 MCHITTESTINFO hitTestInfo = GetHitTestInfo(innerX, innerY);
 
                 switch ((MCHT)hitTestInfo.uHit)
@@ -406,6 +411,7 @@ namespace System.Windows.Forms
             private CalendarRowAccessibleObject GetCalendarRow(int calendarIndex, AccessibleObject parentAccessibleObject, int rowIndex)
             {
                 if (parentAccessibleObject == null ||
+                    !_owner.IsHandleCreated ||
                     (HasHeaderRow ? rowIndex < -1 : rowIndex < 0) ||
                     rowIndex >= RowCount)
                 {
@@ -484,6 +490,11 @@ namespace System.Windows.Forms
 
             private bool GetCalendarGridInfo(ref MCGRIDINFO gridInfo)
             {
+                if (!_owner.IsHandleCreated)
+                {
+                    return false;
+                }
+
                 // Do not use this if gridInfo.dwFlags contains MCGIF_NAME;
                 // use GetCalendarGridInfoText() instead.
                 Debug.Assert(
@@ -497,6 +508,12 @@ namespace System.Windows.Forms
 
             private unsafe bool GetCalendarGridInfoText(MCGIP dwPart, int calendarIndex, int row, int column, out string text)
             {
+                if (!_owner.IsHandleCreated)
+                {
+                    text = null;
+                    return false;
+                }
+
                 const int nameLength = 128;
                 Span<char> name = stackalloc char[nameLength + 2];
 
