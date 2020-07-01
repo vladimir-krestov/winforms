@@ -1506,7 +1506,13 @@ namespace System.Windows.Forms
 
             public override AccessibleObject GetFocused()
             {
+                if (!CheckedListBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 int index = CheckedListBox.FocusedIndex;
+
                 if (index >= 0)
                 {
                     return GetChild(index);
@@ -1517,7 +1523,13 @@ namespace System.Windows.Forms
 
             public override AccessibleObject GetSelected()
             {
+                if (!CheckedListBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 int index = CheckedListBox.SelectedIndex;
+
                 if (index >= 0)
                 {
                     return GetChild(index);
@@ -1528,12 +1540,19 @@ namespace System.Windows.Forms
 
             public override AccessibleObject HitTest(int x, int y)
             {
+                if (!CheckedListBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 // Within a child element?
                 //
                 int count = GetChildCount();
+
                 for (int index = 0; index < count; ++index)
                 {
                     AccessibleObject child = GetChild(index);
+
                     if (child.Bounds.Contains(x, y))
                     {
                         return child;
@@ -1552,6 +1571,11 @@ namespace System.Windows.Forms
 
             public override AccessibleObject Navigate(AccessibleNavigation direction)
             {
+                if (!CheckedListBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 if (GetChildCount() > 0)
                 {
                     if (direction == AccessibleNavigation.FirstChild)
@@ -1578,6 +1602,7 @@ namespace System.Windows.Forms
             {
                 this.name = name;
                 this.parent = parent;
+                Debug.Assert(parent != null, "parent mustn't be null!");
                 this.index = index;
             }
 
@@ -1585,6 +1610,11 @@ namespace System.Windows.Forms
             {
                 get
                 {
+                    if (!ParentCheckedListBox.IsHandleCreated)
+                    {
+                        return Rectangle.Empty;
+                    }
+
                     Rectangle rect = ParentCheckedListBox.GetItemRectangle(index);
 
                     if (rect.IsEmpty)
@@ -1612,6 +1642,11 @@ namespace System.Windows.Forms
             {
                 get
                 {
+                    if (!ParentCheckedListBox.IsHandleCreated)
+                    {
+                        return string.Empty;
+                    }
+
                     if (ParentCheckedListBox.GetItemChecked(index))
                     {
                         return SR.AccessibleActionUncheck;
@@ -1663,6 +1698,11 @@ namespace System.Windows.Forms
             {
                 get
                 {
+                    if (!ParentCheckedListBox.IsHandleCreated)
+                    {
+                        return AccessibleStates.None;
+                    }
+
                     AccessibleStates state = AccessibleStates.Selectable | AccessibleStates.Focusable;
 
                     // Checked state
@@ -1706,11 +1746,21 @@ namespace System.Windows.Forms
 
             public override void DoDefaultAction()
             {
+                if (!ParentCheckedListBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 ParentCheckedListBox.SetItemChecked(index, !ParentCheckedListBox.GetItemChecked(index));
             }
 
             public override AccessibleObject Navigate(AccessibleNavigation direction)
             {
+                if (!ParentCheckedListBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 // Down/Next
                 //
                 if (direction == AccessibleNavigation.Down ||
@@ -1740,7 +1790,7 @@ namespace System.Windows.Forms
             {
                 try
                 {
-                    ParentCheckedListBox.AccessibilityObject.GetSystemIAccessibleInternal().accSelect((int)flags, index + 1);
+                    ParentCheckedListBox.AccessibilityObject.GetSystemIAccessibleInternal()?.accSelect((int)flags, index + 1);
                 }
                 catch (ArgumentException)
                 {

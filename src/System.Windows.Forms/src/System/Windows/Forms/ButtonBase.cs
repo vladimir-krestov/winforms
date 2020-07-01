@@ -1361,6 +1361,11 @@ namespace System.Windows.Forms
 
             public override void DoDefaultAction()
             {
+                if (!Owner.IsHandleCreated)
+                {
+                    return;
+                }
+
                 ((ButtonBase)Owner).OnClick(EventArgs.Empty);
             }
 

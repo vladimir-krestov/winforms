@@ -19,6 +19,7 @@ namespace System.Windows.Forms
     ///  accessibility application.
     /// </summary>
     [ComVisible(true)]
+    [Guid("EF7F86DA-CE53-4996-B3B2-1BFF1347EC1D")]
     public partial class AccessibleObject :
         StandardOleMarshalObject,
         IReflect,

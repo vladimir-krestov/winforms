@@ -1267,13 +1267,20 @@ namespace System.Windows.Forms.PropertyGridInternal
 
             private void ExpandOrCollapse()
             {
+                if (!GetPropertyGridView().IsHandleCreated)
+                {
+                    return;
+                }
+
                 var propertyGridView = GetPropertyGridView();
+
                 if (propertyGridView == null)
                 {
                     return;
                 }
 
                 int row = propertyGridView.GetRowFromGridEntry(_owningPropertyDescriptorGridEntry);
+
                 if (row != -1)
                 {
                     propertyGridView.PopupDialog(row);

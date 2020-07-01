@@ -183,6 +183,11 @@ namespace System.Windows.Forms
 
             public override AccessibleObject HitTest(int x, int y)
             {
+                if (!owner.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 Point pt = owner.PointToClient(new Point(x, y));
                 HitTestInfo hti = owner.HitTest(pt.X, pt.Y);
 
@@ -426,7 +431,7 @@ namespace System.Windows.Forms
 
             internal override void SetFocus()
             {
-                if (owner.CanFocus)
+                if (owner.IsHandleCreated && owner.CanFocus)
                 {
                     owner.Focus();
                 }

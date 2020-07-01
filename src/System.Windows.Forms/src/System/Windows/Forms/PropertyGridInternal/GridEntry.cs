@@ -3026,6 +3026,11 @@ namespace System.Windows.Forms.PropertyGridInternal
             {
                 get
                 {
+                    if (!PropertyGridView.IsHandleCreated)
+                    {
+                        return Rectangle.Empty;
+                    }
+
                     return PropertyGridView.AccessibilityGetGridEntryBounds(owner);
                 }
             }
@@ -3262,6 +3267,11 @@ namespace System.Windows.Forms.PropertyGridInternal
 
             public override void DoDefaultAction()
             {
+                if (!PropertyGridView.IsHandleCreated)
+                {
+                    return;
+                }
+
                 owner.OnOutlineClick(EventArgs.Empty);
             }
 

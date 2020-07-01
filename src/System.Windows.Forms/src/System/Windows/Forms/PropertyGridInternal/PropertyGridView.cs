@@ -7136,6 +7136,11 @@ namespace System.Windows.Forms.PropertyGridInternal
 
             internal override void SetFocus()
             {
+                if (!Owner.IsHandleCreated)
+                {
+                    return;
+                }
+
                 RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);
 
                 base.SetFocus();
@@ -7277,6 +7282,11 @@ namespace System.Windows.Forms.PropertyGridInternal
 
             internal override void SetFocus()
             {
+                if (!Owner.IsHandleCreated)
+                {
+                    return;
+                }
+
                 RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);
 
                 base.SetFocus();
@@ -7284,7 +7294,13 @@ namespace System.Windows.Forms.PropertyGridInternal
 
             internal void SetListBoxItemFocus()
             {
+                if (!Owner.IsHandleCreated)
+                {
+                    return;
+                }
+
                 var selectedItem = _owningGridViewListBox.SelectedItem;
+
                 if (selectedItem != null && _itemAccessibleObjects[selectedItem] is AccessibleObject itemAccessibleObject)
                 {
                     itemAccessibleObject.SetFocus();
@@ -7898,6 +7914,11 @@ namespace System.Windows.Forms.PropertyGridInternal
 
                 internal override void SetFocus()
                 {
+                    if (!Owner.IsHandleCreated)
+                    {
+                        return;
+                    }
+
                     RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);
 
                     base.SetFocus();
@@ -8187,6 +8208,11 @@ namespace System.Windows.Forms.PropertyGridInternal
             /// </returns>
             internal override UiaCore.IRawElementProviderFragment ElementProviderFromPoint(double x, double y)
             {
+                if (!Owner.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 return HitTest((int)x, (int)y);
             }
 
@@ -8631,6 +8657,11 @@ namespace System.Windows.Forms.PropertyGridInternal
             /// </summary>
             public override AccessibleObject HitTest(int x, int y)
             {
+                if (!Owner.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 // Convert to client coordinates
                 var pt = new Point(x, y);
                 User32.ScreenToClient(new HandleRef(Owner, Owner.InternalHandle), ref pt);

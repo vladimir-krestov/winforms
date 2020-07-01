@@ -409,6 +409,7 @@ namespace System.Windows.Forms
                 internal override UiaCore.IRawElementProviderFragment ElementProviderFromPoint(double x, double y)
                 {
                     AccessibleObject element = HitTest((int)x, (int)y);
+
                     if (element != null)
                     {
                         return element;
@@ -630,6 +631,11 @@ namespace System.Windows.Forms
                     {
                         get
                         {
+                            if (!_parent.Owner.IsHandleCreated)
+                            {
+                                return Rectangle.Empty;
+                            }
+
                             // Get button bounds
                             Rectangle bounds = ((UpDownButtons)_parent.Owner).Bounds;
                             bounds.Height /= 2;

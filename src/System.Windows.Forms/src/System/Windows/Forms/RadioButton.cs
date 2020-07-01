@@ -651,6 +651,11 @@ namespace System.Windows.Forms
 
             public override void DoDefaultAction()
             {
+                if (!Owner.IsHandleCreated)
+                {
+                    return;
+                }
+
                 ((RadioButton)Owner).PerformClick();
             }
         }

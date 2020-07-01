@@ -4821,12 +4821,22 @@ namespace System.Windows.Forms
 
             internal unsafe override void SelectItem()
             {
+                if (!_owningComboBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 _owningComboBox.SelectedIndex = GetCurrentIndex();
                 InvalidateRect(new HandleRef(this, _owningComboBox.GetListHandle()), null, BOOL.FALSE);
             }
 
             internal override void AddToSelection()
             {
+                if (!_owningComboBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 SelectItem();
             }
 
@@ -4915,7 +4925,7 @@ namespace System.Windows.Forms
 
             private void ComboBoxDefaultAction(bool expand)
             {
-                if (_owningComboBox.DroppedDown != expand)
+                if (_owningComboBox.IsHandleCreated && _owningComboBox.DroppedDown != expand)
                 {
                     _owningComboBox.DroppedDown = expand;
                 }
@@ -4987,7 +4997,7 @@ namespace System.Windows.Forms
             {
                 get
                 {
-                    return _owningComboBox.DroppedDown == true ? UiaCore.ExpandCollapseState.Expanded : UiaCore.ExpandCollapseState.Collapsed;
+                    return _owningComboBox.IsHandleCreated && _owningComboBox.DroppedDown == true ? UiaCore.ExpandCollapseState.Expanded : UiaCore.ExpandCollapseState.Collapsed;
                 }
             }
 
@@ -5102,6 +5112,11 @@ namespace System.Windows.Forms
             /// </remarks>
             internal AccessibleObject GetChildFragment(int index)
             {
+                if (!_owningComboBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 if (_owningComboBox.DropDownStyle == ComboBoxStyle.DropDownList)
                 {
                     if (index == 0)
@@ -5178,7 +5193,13 @@ namespace System.Windows.Forms
 
             internal void SetComboBoxItemFocus()
             {
+                if (!_owningComboBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 var selectedItem = _owningComboBox.SelectedItem;
+
                 if (selectedItem == null)
                 {
                     return;
@@ -5192,7 +5213,13 @@ namespace System.Windows.Forms
 
             internal void SetComboBoxItemSelection()
             {
+                if (!_owningComboBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 var selectedItem = _owningComboBox.SelectedItem;
+
                 if (selectedItem == null)
                 {
                     return;
@@ -5206,6 +5233,11 @@ namespace System.Windows.Forms
 
             internal override void SetFocus()
             {
+                if (!_owningComboBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 base.SetFocus();
 
                 RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);
@@ -5505,15 +5537,26 @@ namespace System.Windows.Forms
 
             public override AccessibleObject GetFocused()
             {
+                if (!_owningComboBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 int selectedIndex = _owningComboBox.SelectedIndex;
                 return GetChildFragment(selectedIndex);
             }
 
             internal override UiaCore.IRawElementProviderSimple[] GetSelection()
             {
+                if (!_owningComboBox.IsHandleCreated)
+                {
+                    return Array.Empty<UiaCore.IRawElementProviderSimple>();
+                }
+
                 int selectedIndex = _owningComboBox.SelectedIndex;
 
                 AccessibleObject itemAccessibleObject = GetChildFragment(selectedIndex);
+
                 if (itemAccessibleObject != null)
                 {
                     return new UiaCore.IRawElementProviderSimple[] {
