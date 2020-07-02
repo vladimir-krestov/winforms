@@ -1795,7 +1795,7 @@ namespace System.Windows.Forms
                         throw new InvalidOperationException(SR.DataGridViewRowAccessibleObject_OwnerNotSet);
                     }
 
-                    if (owner.DataGridView == null)
+                    if (owner.DataGridView == null || !owner.DataGridView.IsHandleCreated)
                     {
                         return Rectangle.Empty;
                     }
@@ -1917,6 +1917,11 @@ namespace System.Windows.Forms
                     if (owner == null)
                     {
                         throw new InvalidOperationException(SR.DataGridViewRowAccessibleObject_OwnerNotSet);
+                    }
+
+                    if (!owner.DataGridView.IsHandleCreated)
+                    {
+                        return AccessibleStates.None;
                     }
 
                     AccessibleStates accState = AccessibleStates.Selectable;
@@ -2159,14 +2164,17 @@ namespace System.Windows.Forms
                 }
 
                 DataGridView dataGridView = owner.DataGridView;
-                if (dataGridView == null)
+
+                if (dataGridView == null || !dataGridView.IsHandleCreated)
                 {
                     return;
                 }
+
                 if ((flags & AccessibleSelection.TakeFocus) == AccessibleSelection.TakeFocus)
                 {
                     dataGridView.Focus();
                 }
+
                 if ((flags & AccessibleSelection.TakeSelection) == AccessibleSelection.TakeSelection)
                 {
                     if (owner.Cells.Count > 0)

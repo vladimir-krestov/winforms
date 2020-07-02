@@ -73,6 +73,11 @@ namespace System.Windows.Forms
             {
                 get
                 {
+                    if (!_owningListBox.IsHandleCreated)
+                    {
+                        return Rectangle.Empty;
+                    }
+
                     Rectangle bounds = _owningListBox.GetItemRectangle(CurrentIndex);
 
                     if (bounds.IsEmpty)
@@ -141,12 +146,18 @@ namespace System.Windows.Forms
 
             internal override void AddToSelection()
             {
-                SelectItem();
+                if (_owningListBox.IsHandleCreated)
+                {
+                    SelectItem();
+                }
             }
 
             public override void DoDefaultAction()
             {
-                SetFocus();
+                if (_owningListBox.IsHandleCreated)
+                {
+                    SetFocus();
+                }
             }
 
             internal override UiaCore.IRawElementProviderFragment FragmentNavigate(UiaCore.NavigateDirection direction)
@@ -242,6 +253,11 @@ namespace System.Windows.Forms
 
             internal override void ScrollIntoView()
             {
+                if (!_owningListBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 int currentIndex = CurrentIndex;
 
                 if (_owningListBox.SelectedIndex == -1) //no item selected
@@ -285,6 +301,11 @@ namespace System.Windows.Forms
 
             internal unsafe override void SelectItem()
             {
+                if (!_owningListBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 _owningListBox.SelectedIndex = CurrentIndex;
 
                 User32.InvalidateRect(new HandleRef(this, _owningListBox.InternalHandle), null, BOOL.FALSE);
@@ -294,6 +315,11 @@ namespace System.Windows.Forms
 
             internal override void SetFocus()
             {
+                if (!_owningListBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);
                 SelectItem();
             }

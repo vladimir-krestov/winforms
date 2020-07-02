@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -138,7 +138,8 @@ namespace System.Windows.Forms
 
             public override void DoDefaultAction()
             {
-                if ((Owner.DataGridView.SelectionMode == DataGridViewSelectionMode.FullRowSelect ||
+                if (Owner.DataGridView.IsHandleCreated &&
+                    (Owner.DataGridView.SelectionMode == DataGridViewSelectionMode.FullRowSelect ||
                     Owner.DataGridView.SelectionMode == DataGridViewSelectionMode.RowHeaderSelect) &&
                     Owner.OwningRow != null)
                 {
@@ -240,14 +241,16 @@ namespace System.Windows.Forms
                 DataGridViewRowHeaderCell dataGridViewCell = (DataGridViewRowHeaderCell)Owner;
                 DataGridView dataGridView = dataGridViewCell.DataGridView;
 
-                if (dataGridView == null)
+                if (dataGridView == null || !dataGridView.IsHandleCreated)
                 {
                     return;
                 }
+
                 if ((flags & AccessibleSelection.TakeFocus) == AccessibleSelection.TakeFocus)
                 {
                     dataGridView.Focus();
                 }
+
                 if (dataGridViewCell.OwningRow != null &&
                     (dataGridView.SelectionMode == DataGridViewSelectionMode.FullRowSelect ||
                      dataGridView.SelectionMode == DataGridViewSelectionMode.RowHeaderSelect))

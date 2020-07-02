@@ -443,7 +443,12 @@ namespace System.Windows.Forms
 
             internal override UiaCore.IRawElementProviderFragment ElementProviderFromPoint(double x, double y)
             {
-                return HitTest((int)x, (int)y);
+                if (!owner.IsHandleCreated)
+                {
+                    return HitTest((int)x, (int)y);
+                }
+
+                return null;
             }
 
             internal override UiaCore.IRawElementProviderFragment GetFocus()

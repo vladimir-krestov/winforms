@@ -37,7 +37,8 @@ namespace System.Windows.Forms
                 _systemIAccessible = GetSystemIAccessibleInternal();
             }
 
-            internal override Rectangle BoundingRectangle => _owningListBox.GetToolNativeScreenRectangle();
+            internal override Rectangle BoundingRectangle => _owningListBox.IsHandleCreated ?
+                                                             _owningListBox.GetToolNativeScreenRectangle() : Rectangle.Empty;
 
             internal override UiaCore.IRawElementProviderFragmentRoot FragmentRoot => this;
 
@@ -89,6 +90,11 @@ namespace System.Windows.Forms
             /// <returns>The accessible object of corresponding element in the provided coordinates.</returns>
             internal override UiaCore.IRawElementProviderFragment ElementProviderFromPoint(double x, double y)
             {
+                if (!_owningListBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 AccessibleObject element = HitTest((int)x, (int)y);
 
                 if (element != null)
@@ -126,7 +132,12 @@ namespace System.Windows.Forms
 
             internal override UiaCore.IRawElementProviderFragment GetFocus()
             {
-                return GetFocused();
+                if (_owningListBox.IsHandleCreated)
+                {
+                    return GetFocused();
+                }
+
+                return null;
             }
 
             /// <summary>
@@ -167,6 +178,7 @@ namespace System.Windows.Forms
             internal override UiaCore.IRawElementProviderSimple[] GetSelection()
             {
                 AccessibleObject itemAccessibleObject = GetSelected();
+
                 if (itemAccessibleObject != null)
                 {
                     return new UiaCore.IRawElementProviderSimple[]
@@ -207,11 +219,19 @@ namespace System.Windows.Forms
 
             internal override void SelectItem()
             {
-                GetChild(_owningListBox.FocusedIndex).SelectItem();
+                if (_owningListBox.IsHandleCreated)
+                {
+                    GetChild(_owningListBox.FocusedIndex).SelectItem();
+                }
             }
 
             internal override void SetFocus()
             {
+                if (!_owningListBox.IsHandleCreated)
+                {
+                    return;
+                }
+
                 AccessibleObject focusedItem = GetFocused();
                 focusedItem.RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);
                 focusedItem.SetFocus();
@@ -257,6 +277,7 @@ namespace System.Windows.Forms
             public override AccessibleObject GetSelected()
             {
                 int index = _owningListBox.SelectedIndex;
+
                 if (index >= 0)
                 {
                     return GetChild(index);
@@ -267,6 +288,11 @@ namespace System.Windows.Forms
 
             public override AccessibleObject HitTest(int x, int y)
             {
+                if (!_owningListBox.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 // Within a child element?
                 //
                 int count = GetChildCount();

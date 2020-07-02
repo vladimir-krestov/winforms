@@ -36,7 +36,8 @@ namespace System.Windows.Forms
                     {
                         throw new InvalidOperationException(SR.DataGridViewTopRowAccessibleObject_OwnerNotSet);
                     }
-                    if (owner.ColumnHeadersVisible)
+
+                    if (owner.ColumnHeadersVisible && owner.IsHandleCreated)
                     {
                         Rectangle rect = Rectangle.Union(owner.layout.ColumnHeaders, owner.layout.TopLeftHeader);
                         return owner.RectangleToScreen(rect);

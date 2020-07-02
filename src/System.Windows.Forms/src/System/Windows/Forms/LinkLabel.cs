@@ -74,8 +74,8 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Gets or sets the color used to display active links.
-            /// </summary>
+        ///  Gets or sets the color used to display active links.
+        /// </summary>
         [SRCategory(nameof(SR.CatAppearance))]
         [SRDescription(nameof(SR.LinkLabelActiveLinkColorDescr))]
         public Color ActiveLinkColor
@@ -102,8 +102,8 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Gets or sets the color used to display disabled links.
-            /// </summary>
+        ///  Gets or sets the color used to display disabled links.
+        /// </summary>
         [SRCategory(nameof(SR.CatAppearance))]
         [SRDescription(nameof(SR.LinkLabelDisabledLinkColorDescr))]
         public Color DisabledLinkColor
@@ -265,8 +265,8 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Gets ir sets a value that represents how the link will be underlined.
-            /// </summary>
+        ///  Gets ir sets a value that represents how the link will be underlined.
+        /// </summary>
         [DefaultValue(LinkBehavior.SystemDefault)]
         [SRCategory(nameof(SR.CatBehavior))]
         [SRDescription(nameof(SR.LinkLabelLinkBehaviorDescr))]
@@ -293,8 +293,8 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Gets or sets the color used to display links in normal cases.
-            /// </summary>
+        ///  Gets or sets the color used to display links in normal cases.
+        /// </summary>
         [SRCategory(nameof(SR.CatAppearance))]
         [SRDescription(nameof(SR.LinkLabelLinkColorDescr))]
         public Color LinkColor
@@ -342,8 +342,8 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Gets or sets a value indicating whether the link should be displayed as if it was visited.
-            /// </summary>
+        ///  Gets or sets a value indicating whether the link should be displayed as if it was visited.
+        /// </summary>
         [DefaultValue(false)]
         [SRCategory(nameof(SR.CatAppearance))]
         [SRDescription(nameof(SR.LinkLabelLinkVisitedDescr))]
@@ -893,10 +893,10 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Gets or sets a value that is returned to the
+        ///  Gets or sets a value that is returned to the
         ///  parent form when the link label.
         ///  is clicked.
-            /// </summary>
+        /// </summary>
         DialogResult IButtonControl.DialogResult
         {
             get
@@ -1626,7 +1626,7 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Processes a dialog key. This method is called during message pre-processing
+        ///  Processes a dialog key. This method is called during message pre-processing
         ///  to handle dialog characters, such as TAB, RETURN, ESCAPE, and arrow keys. This
         ///  method is called only if the isInputKey() method indicates that the control
         ///  isn't interested in the key. processDialogKey() simply sends the character to
@@ -1636,7 +1636,7 @@ namespace System.Windows.Forms
         ///  to indicate that it has processed the key. For keys that aren't processed by the
         ///  control, the result of "base.processDialogChar()" should be returned. Controls
         ///  will seldom, if ever, need to override this method.
-            /// </summary>
+        /// </summary>
         protected override bool ProcessDialogKey(Keys keyData)
         {
             if ((keyData & (Keys.Alt | Keys.Control)) != Keys.Alt)
@@ -1785,10 +1785,10 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Performs the work of setting the bounds of this control. Inheriting classes
+        ///  Performs the work of setting the bounds of this control. Inheriting classes
         ///  can overide this function to add size restrictions. Inheriting classes must call
         ///  base.setBoundsCore to actually cause the bounds of the control to change.
-            /// </summary>
+        /// </summary>
         protected override void SetBoundsCore(int x, int y, int width, int height, BoundsSpecified specified)
         {
             // we cache too much state to try and optimize this (regions, etc)... it is best
@@ -1845,25 +1845,25 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Determines if the color for active links should remain the same.
-            /// </summary>
+        ///  Determines if the color for active links should remain the same.
+        /// </summary>
         internal bool ShouldSerializeActiveLinkColor()
         {
             return !activeLinkColor.IsEmpty;
         }
 
         /// <summary>
-            ///  Determines if the color for disabled links should remain the same.
-            /// </summary>
+        ///  Determines if the color for disabled links should remain the same.
+        /// </summary>
         internal bool ShouldSerializeDisabledLinkColor()
         {
             return !disabledLinkColor.IsEmpty;
         }
 
         /// <summary>
-            ///  Determines if the range in text that is treated as a
+        ///  Determines if the range in text that is treated as a
         ///  link should remain the same.
-            /// </summary>
+        /// </summary>
         private bool ShouldSerializeLinkArea()
         {
             if (links.Count == 1)
@@ -1875,8 +1875,8 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Determines if the color of links in normal cases should remain the same.
-            /// </summary>
+        ///  Determines if the color of links in normal cases should remain the same.
+        /// </summary>
         internal bool ShouldSerializeLinkColor()
         {
             return !linkColor.IsEmpty;
@@ -1893,16 +1893,16 @@ namespace System.Windows.Forms
         }
 
         /// <summary>
-            ///  Determines if the color of links that have been visited should remain the same.
-            /// </summary>
+        ///  Determines if the color of links that have been visited should remain the same.
+        /// </summary>
         private bool ShouldSerializeVisitedLinkColor()
         {
             return !visitedLinkColor.IsEmpty;
         }
 
         /// <summary>
-            ///  Update accessibility with the currently focused link.
-            /// </summary>
+        ///  Update accessibility with the currently focused link.
+        /// </summary>
         private void UpdateAccessibilityLink(Link focusLink)
         {
             if (!IsHandleCreated)
@@ -2684,16 +2684,24 @@ namespace System.Windows.Forms
 
             public override AccessibleObject HitTest(int x, int y)
             {
+                if (!Owner.IsHandleCreated)
+                {
+                    return null;
+                }
+
                 Point p = Owner.PointToClient(new Point(x, y));
                 Link hit = ((LinkLabel)Owner).PointInLink(p.X, p.Y);
+
                 if (hit != null)
                 {
                     return new LinkAccessibleObject(hit);
                 }
+
                 if (Bounds.Contains(x, y))
                 {
                     return this;
                 }
+
                 return null;
             }
 
@@ -2719,6 +2727,11 @@ namespace System.Windows.Forms
             {
                 get
                 {
+                    if (!link.Owner.IsHandleCreated)
+                    {
+                        return Rectangle.Empty;
+                    }
+
                     Region region = link.VisualRegion;
                     Graphics g = Graphics.FromHwnd(link.Owner.InternalHandle);
 

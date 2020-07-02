@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -35,7 +35,12 @@ namespace System.Windows.Forms
             {
                 get
                 {
-                    return GetAccessibleObjectBounds(GetAccessibleObjectParent());
+                    if (owner.DataGridView.IsHandleCreated)
+                    {
+                        return GetAccessibleObjectBounds(GetAccessibleObjectParent());
+                    }
+
+                    return Rectangle.Empty;
                 }
             }
 
@@ -149,6 +154,11 @@ namespace System.Windows.Forms
                     if (owner == null)
                     {
                         throw new InvalidOperationException(SR.DataGridViewCellAccessibleObject_OwnerNotSet);
+                    }
+
+                    if (!owner.DataGridView.IsHandleCreated)
+                    {
+                        return AccessibleStates.None;
                     }
 
                     AccessibleStates state = AccessibleStates.Selectable | AccessibleStates.Focusable;
@@ -285,7 +295,7 @@ namespace System.Windows.Forms
                 DataGridViewCell dataGridViewCell = (DataGridViewCell)Owner;
                 DataGridView dataGridView = dataGridViewCell.DataGridView;
 
-                if (dataGridViewCell is DataGridViewHeaderCell)
+                if (dataGridViewCell is DataGridViewHeaderCell || !dataGridView.IsHandleCreated)
                 {
                     return;
                 }
@@ -332,7 +342,7 @@ namespace System.Windows.Forms
                     throw new InvalidOperationException(SR.DataGridViewCellAccessibleObject_OwnerNotSet);
                 }
 
-                if (owner.OwningColumn == null)
+                if (!owner.DataGridView.IsHandleCreated || owner.OwningColumn == null)
                 {
                     return Rectangle.Empty;
                 }
@@ -605,6 +615,12 @@ namespace System.Windows.Forms
                 {
                     throw new InvalidOperationException(SR.DataGridViewCellAccessibleObject_OwnerNotSet);
                 }
+
+                if (!owner.DataGridView.IsHandleCreated)
+                {
+                    return;
+                }
+
                 if ((flags & AccessibleSelection.TakeFocus) == AccessibleSelection.TakeFocus)
                 {
                     owner.DataGridView?.Focus();

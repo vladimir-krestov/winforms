@@ -3317,6 +3317,11 @@ namespace System.Windows.Forms.PropertyGridInternal
             {
                 get
                 {
+                    if (!PropertyGridView.IsHandleCreated)
+                    {
+                        return AccessibleStates.None;
+                    }
+
                     AccessibleStates state = AccessibleStates.Selectable | AccessibleStates.Focusable;
 
                     // Determine focus
@@ -3436,6 +3441,11 @@ namespace System.Windows.Forms.PropertyGridInternal
 
             public override void Select(AccessibleSelection flags)
             {
+                if (!PropertyGridView.IsHandleCreated)
+                {
+                    return;
+                }
+
                 // make sure we're on the right thread.
                 //
                 if (PropertyGridView.InvokeRequired)
@@ -3461,6 +3471,11 @@ namespace System.Windows.Forms.PropertyGridInternal
 
             internal override void SetFocus()
             {
+                if (!PropertyGridView.IsHandleCreated)
+                {
+                    return;
+                }
+
                 base.SetFocus();
 
                 RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);

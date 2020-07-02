@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -22,7 +22,12 @@ namespace System.Windows.Forms
             {
                 get
                 {
-                    return GetAccessibleObjectBounds(ParentPrivate);
+                    if (Owner.DataGridView.IsHandleCreated)
+                    {
+                        return GetAccessibleObjectBounds(ParentPrivate);
+                    }
+
+                    return Rectangle.Empty;
                 }
             }
 
@@ -131,6 +136,11 @@ namespace System.Windows.Forms
             {
                 DataGridViewColumnHeaderCell dataGridViewCell = (DataGridViewColumnHeaderCell)Owner;
                 DataGridView dataGridView = dataGridViewCell.DataGridView;
+
+                if (!dataGridView.IsHandleCreated)
+                {
+                    return;
+                }
 
                 if (dataGridViewCell.OwningColumn != null)
                 {
@@ -263,14 +273,16 @@ namespace System.Windows.Forms
                 DataGridViewColumnHeaderCell dataGridViewCell = (DataGridViewColumnHeaderCell)Owner;
                 DataGridView dataGridView = dataGridViewCell.DataGridView;
 
-                if (dataGridView == null)
+                if (dataGridView == null || !dataGridView.IsHandleCreated)
                 {
                     return;
                 }
+
                 if ((flags & AccessibleSelection.TakeFocus) == AccessibleSelection.TakeFocus)
                 {
                     dataGridView.Focus();
                 }
+
                 if (dataGridViewCell.OwningColumn != null &&
                     (dataGridView.SelectionMode == DataGridViewSelectionMode.FullColumnSelect ||
                      dataGridView.SelectionMode == DataGridViewSelectionMode.ColumnHeaderSelect))

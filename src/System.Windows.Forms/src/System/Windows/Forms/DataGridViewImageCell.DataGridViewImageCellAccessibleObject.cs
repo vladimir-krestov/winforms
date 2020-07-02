@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -54,7 +54,8 @@ namespace System.Windows.Forms
                 DataGridViewImageCell dataGridViewCell = (DataGridViewImageCell)Owner;
                 DataGridView dataGridView = dataGridViewCell.DataGridView;
 
-                if (dataGridView != null && dataGridViewCell.RowIndex != -1 &&
+                if (dataGridView != null && dataGridView.IsHandleCreated &&
+                    dataGridViewCell.RowIndex != -1 &&
                     dataGridViewCell.OwningColumn != null && dataGridViewCell.OwningRow != null)
                 {
                     dataGridView.OnCellContentClickInternal(new DataGridViewCellEventArgs(dataGridViewCell.ColumnIndex, dataGridViewCell.RowIndex));

@@ -60,7 +60,7 @@ namespace System.Windows.Forms
             public void RaiseMouseClick()
             {
                 // Make sure that the control is enabled.
-                if (User32.IsWindowEnabled(_calendarAccessibleObject.Owner.InternalHandle).IsFalse())
+                if (!_calendarAccessibleObject.Owner.IsHandleCreated || User32.IsWindowEnabled(_calendarAccessibleObject.Owner.InternalHandle).IsFalse())
                 {
                     return;
                 }

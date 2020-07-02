@@ -259,6 +259,11 @@ namespace System.Windows.Forms.PropertyGridInternal
 
         public override void DoDefaultAction()
         {
+            if (!_owningDropDownButton.IsHandleCreated)
+            {
+                return;
+            }
+
             _owningDropDownButton.PerformButtonClick();
         }
 
@@ -350,6 +355,11 @@ namespace System.Windows.Forms.PropertyGridInternal
         /// </summary>
         internal override void SetFocus()
         {
+            if (!_owningDropDownButton.IsHandleCreated)
+            {
+                return;
+            }
+
             RaiseAutomationEvent(UiaCore.UIA.AutomationFocusChangedEventId);
 
             base.SetFocus();
