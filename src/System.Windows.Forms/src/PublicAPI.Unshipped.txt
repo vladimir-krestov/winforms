@@ -1,1 +1,2 @@
 ~override System.Windows.Forms.ListView.OnLostFocus(System.EventArgs e) -> void
+~override System.Windows.Forms.MonthCalendar.OnResize(System.EventArgs e) -> void

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Drawing;
 using static Interop;
 
 namespace System.Windows.Forms
@@ -10,33 +11,39 @@ namespace System.Windows.Forms
     {
         internal class CalendarNextButtonAccessibleObject : CalendarButtonAccessibleObject
         {
+            // The "Next" button is the second in the calendar accessibility tree.
+            // Indices start at 1.
             private const int ChildId = 2;
 
-            public CalendarNextButtonAccessibleObject(MonthCalendarAccessibleObject calendarAccessibleObject, int calendarIndex)
-                : base(calendarAccessibleObject, calendarIndex, CalendarButtonType.Next)
+            private readonly MonthCalendarAccessibleObject _monthCalendarAccessibleObject;
+
+            public CalendarNextButtonAccessibleObject(MonthCalendarAccessibleObject calendarAccessibleObject)
+                : base(calendarAccessibleObject)
             {
+                _monthCalendarAccessibleObject = calendarAccessibleObject;
             }
 
-            protected override CalendarButtonType ButtonType => CalendarButtonType.Next;
+            public override Rectangle Bounds
+                => _monthCalendarAccessibleObject.GetCalendarPartRectangle(ComCtl32.MCGIP.NEXT);
 
-            internal override int GetChildId() => ChildId;
+            public override string Description => SR.CalendarNextButtonAccessibleObjectDescription;
 
-            internal override UiaCore.IRawElementProviderFragment? FragmentNavigate(UiaCore.NavigateDirection direction) =>
-                direction switch
+            internal override UiaCore.IRawElementProviderFragment? FragmentNavigate(UiaCore.NavigateDirection direction)
+                => direction switch
                 {
-                    UiaCore.NavigateDirection.PreviousSibling => _calendarAccessibleObject.GetCalendarChildAccessibleObject(_calendarIndex, CalendarChildType.PreviousButton),
-                    UiaCore.NavigateDirection.NextSibling => _calendarAccessibleObject.GetCalendarChildAccessibleObject(_calendarIndex, CalendarChildType.CalendarHeader),
+                    UiaCore.NavigateDirection.PreviousSibling => _monthCalendarAccessibleObject.PreviousButtonAccessibleObject,
+                    UiaCore.NavigateDirection.NextSibling => _monthCalendarAccessibleObject.CalendarsAccessibleObjects.First?.Value,
                     _ => base.FragmentNavigate(direction)
                 };
 
-            internal override object? GetPropertyValue(UiaCore.UIA propertyID) =>
-                propertyID switch
-                {
-                    UiaCore.UIA.BoundingRectanglePropertyId => BoundingRectangle,
-                    UiaCore.UIA.ControlTypePropertyId => UiaCore.UIA.ButtonControlTypeId,
-                    UiaCore.UIA.NamePropertyId => SR.MonthCalendarNextButtonAccessibleName,
-                    _ => base.GetPropertyValue(propertyID)
-                };
+            internal override int GetChildId() => ChildId;
+
+            private protected override bool IsEnabled
+                => _monthCalendarAccessibleObject.IsEnabled
+                // If there is an opportunity to move to the next dates
+                && _monthCalendarAccessibleObject.MaxDate > _monthCalendarAccessibleObject.GetDisplayRange(true).End;
+
+            public override string Name => SR.MonthCalendarNextButtonAccessibleName;
         }
     }
 }

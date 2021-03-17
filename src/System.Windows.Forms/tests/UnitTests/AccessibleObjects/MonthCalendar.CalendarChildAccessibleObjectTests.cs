@@ -12,13 +12,13 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
         [WinFormsFact]
         public void CalendarChildAccessibleObject_ctor_ThrowsException_IfCalendarAccessibleObjectIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new SubObject(null, 0, CalendarChildType.CalendarBody));
+            Assert.Throws<ArgumentNullException>(() => new SubObject(null));
         }
 
-        private class SubObject : CalendarChildAccessibleObject
+        private class SubObject : MonthCalendarChildAccessibleObject
         {
-            public SubObject(MonthCalendarAccessibleObject calendarAccessibleObject, int calendarIndex, CalendarChildType itemType)
-                : base(calendarAccessibleObject, calendarIndex, itemType)
+            public SubObject(MonthCalendarAccessibleObject calendarAccessibleObject)
+                : base(calendarAccessibleObject)
             { }
         }
     }

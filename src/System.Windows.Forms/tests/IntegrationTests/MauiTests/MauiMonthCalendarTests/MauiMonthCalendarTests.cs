@@ -126,14 +126,14 @@ namespace System.Windows.Forms.IntegrationTests.MauiTests
             using var wrapper = new MonthCalendarWrapper(this);
             Application.DoEvents();
             MonthCalendarAccessibleObject accessibleObject = (MonthCalendarAccessibleObject)wrapper.Calendar.AccessibilityObject;
-            CalendarBodyAccessibleObject bodyAccessibleObject = new CalendarBodyAccessibleObject(accessibleObject, 0);
+            CalendarAccessibleObject calendarAccessibleObject = new CalendarAccessibleObject(accessibleObject, 0, "Test name");
             MCHITTESTINFO info = new MCHITTESTINFO
             {
                 uHit = MCHT.CALENDARDAY,
                 iRow = 0
             };
             Application.DoEvents();
-            CalendarChildAccessibleObject cell = bodyAccessibleObject.GetFromPoint(info);
+            MonthCalendarChildAccessibleObject cell = calendarAccessibleObject.GetChildFromPoint(info);
 
             return new ScenarioResult(cell != null);
         }
@@ -144,14 +144,14 @@ namespace System.Windows.Forms.IntegrationTests.MauiTests
             using var wrapper = new MonthCalendarWrapper(this);
             Application.DoEvents();
             MonthCalendarAccessibleObject accessibleObject = (MonthCalendarAccessibleObject)wrapper.Calendar.AccessibilityObject;
-            CalendarBodyAccessibleObject bodyAccessibleObject = new CalendarBodyAccessibleObject(accessibleObject, -10);
+            CalendarAccessibleObject calendarAccessibleObject = new CalendarAccessibleObject(accessibleObject, -10, "Test name");
             MCHITTESTINFO info = new MCHITTESTINFO
             {
                 uHit = MCHT.CALENDARDAY,
                 iRow = 0
             };
             Application.DoEvents();
-            CalendarChildAccessibleObject cell = bodyAccessibleObject.GetFromPoint(info);
+            MonthCalendarChildAccessibleObject cell = calendarAccessibleObject.GetChildFromPoint(info);
 
             return new ScenarioResult(cell is null);
         }
@@ -162,14 +162,14 @@ namespace System.Windows.Forms.IntegrationTests.MauiTests
             using var wrapper = new MonthCalendarWrapper(this);
             Application.DoEvents();
             MonthCalendarAccessibleObject accessibleObject = (MonthCalendarAccessibleObject)wrapper.Calendar.AccessibilityObject;
-            CalendarBodyAccessibleObject bodyAccessibleObject = new CalendarBodyAccessibleObject(accessibleObject, 0);
+            CalendarAccessibleObject calendarAccessibleObject = new CalendarAccessibleObject(accessibleObject, 0, "Test name name");
             MCHITTESTINFO info = new MCHITTESTINFO
             {
                 uHit = MCHT.CALENDARDAY,
                 iRow = -10
             };
             Application.DoEvents();
-            CalendarChildAccessibleObject cell = bodyAccessibleObject.GetFromPoint(info);
+            MonthCalendarChildAccessibleObject cell = calendarAccessibleObject.GetChildFromPoint(info);
 
             return new ScenarioResult(cell is null);
         }

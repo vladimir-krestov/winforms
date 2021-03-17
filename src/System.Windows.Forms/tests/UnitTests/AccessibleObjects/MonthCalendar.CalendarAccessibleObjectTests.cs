@@ -10,21 +10,21 @@ using static Interop.ComCtl32;
 
 namespace System.Windows.Forms.Tests.AccessibleObjects
 {
-    public class CalendarBodyAccessibleObjectTests : IClassFixture<ThreadExceptionFixture>
+    public class CalendarAccessibleObjectTests : IClassFixture<ThreadExceptionFixture>
     {
         [WinFormsFact]
         public void CalendarBodyAccessibleObject_ctor_Default()
         {
             using MonthCalendar calendar = new MonthCalendar();
-            MonthCalendarAccessibleObject calendarAccessibleObject = new MonthCalendarAccessibleObject(calendar);
-            CalendarBodyAccessibleObject bodyAccessibleObject = new CalendarBodyAccessibleObject(calendarAccessibleObject, 0);
-            Assert.Equal(calendarAccessibleObject, bodyAccessibleObject.Parent);
+            MonthCalendarAccessibleObject monthCalendarAccessibleObject = new MonthCalendarAccessibleObject(calendar);
+            CalendarAccessibleObject celndarAccessibleObject = new CalendarAccessibleObject(monthCalendarAccessibleObject, 0, "Test name");
+            Assert.Equal(monthCalendarAccessibleObject, celndarAccessibleObject.Parent);
         }
 
         [WinFormsFact]
         public void CalendarBodyAccessibleObject_ctor_ThrowsException_IfCalendarAccessibleObjectIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new CalendarBodyAccessibleObject(null, 0));
+            Assert.Throws<ArgumentNullException>(() => new CalendarAccessibleObject(null, 0, "Test name"));
         }
     }
 }

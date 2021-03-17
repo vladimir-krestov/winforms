@@ -13,7 +13,9 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
         {
             using var calendar = new MonthCalendar();
             MonthCalendar.MonthCalendarAccessibleObject accessibleObject = Assert.IsType<MonthCalendar.MonthCalendarAccessibleObject>(calendar.AccessibilityObject);
-            var headerAccessibleObject = new MonthCalendar.CalendarHeaderAccessibleObject(accessibleObject, 0);
+
+            var calendarAccessibleObject = new MonthCalendar.CalendarAccessibleObject(accessibleObject, 0, "Test name");
+            var headerAccessibleObject = new MonthCalendar.CalendarHeaderAccessibleObject(calendarAccessibleObject, accessibleObject, 0);
             Assert.Empty(headerAccessibleObject.Name);
         }
     }
