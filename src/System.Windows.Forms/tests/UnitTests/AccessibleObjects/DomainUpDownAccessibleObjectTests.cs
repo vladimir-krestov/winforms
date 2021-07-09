@@ -92,6 +92,8 @@ namespace System.Windows.Forms.Tests.AccessibleObjects
 
             Assert.Equal(expected, actual);
             Assert.False(domainUpDown.IsHandleCreated);
+
+            
         }
     }
 }
